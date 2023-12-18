@@ -11,6 +11,7 @@
 rm(list=ls())
 
 ## Loading Packages  ------------------
+library(performance) # for check_collinearity
 library(ggplot2)
 library(tidyverse)
 library(BAS)
@@ -24,7 +25,6 @@ library(VGAM) # for vglm
 library(lme4) # for lmer
 library(lmerTest)
 library(modelr)
-library(performance) # for check_collinearity
 library(scales) # for trans_breaks
 library(MuMIn) # for r.squaredGLMM, AICc
 library(lattice) # for qqmath
@@ -44,7 +44,7 @@ library(ggtext) # for element_markdown
 library(here)
 library(remef) # devtools::install_github("hohenstein/remef")
 library(merTools) # for predictInterval
-library(gammit) # for predict_gamm
+library(gammit) # devtools::install_github("m-clark/gammit") / for predict_gamm
 library(wesanderson)
 library(gratia) # for confint.gam
 
@@ -56,7 +56,7 @@ library(gratia) # for confint.gam
 `%notin%` <- Negate(`%in%`)
 
 ## -------------------------------
-source(here("script","Functions_Cytokines.R"))
+# source(here("script","Functions_Cytokines.R"))
 
 # Data -----
 data <- read.csv(here("data","cytokine_data.csv"))
@@ -592,7 +592,7 @@ p_egf <- ggplot() + geom_line(data = pred_den, aes(x = bites, y = pred_cyto),
   #            size = 2.5, alpha = 0.8) +
   scale_color_manual(values = pal) +
   labs(y = "Concentration (log<sub>10</sub> pg/\u03BCl)",
-       x = "Nb bites previous day",
+       x = "Number of bites in the short-term",
        color = "") +
   ggtitle(paste0("A - ",c)) +
   scale_y_continuous(limits = c(1.5,2.35),
@@ -685,7 +685,7 @@ p_mif <- ggplot() + geom_line(data = pred_den, aes(x = bites, y = pred_cyto),
   #                col = ID),
   #            size = 2.5, alpha = 0.8) +
   labs(y = "", # "Concentration (log<sub>10</sub> pg/\u03BCl)",
-       x = "Nb bites previous day",
+       x = "Number of bites in the short-term",
        color = "") +
   ggtitle(paste0("B - ",c)) +
   scale_color_manual(values = pal) +
@@ -704,9 +704,9 @@ p_mif <- ggplot() + geom_line(data = pred_den, aes(x = bites, y = pred_cyto),
         plot.title = element_text(size = 23))
 
 p_short <- p_egf | p_mif
-png(filename = here("output","cytokines","repeated_bites","figures","cytokines_main_short_term.png"), width = 1600, height = 500)
-plot(p_short)
-dev.off()
+# png(filename = here("output","figures","cytokines_main_short_term.png"), width = 1600, height = 500)
+# plot(p_short)
+# dev.off()
 
 ## Long term ----
 c <- "EGF" 
@@ -765,7 +765,7 @@ p_egf <- ggplot() + geom_line(data = pred_den, aes(x = bites, y = pred_cyto),
   #                col = ID),
   #            size = 2.5, alpha = 0.8) +
   labs(y = "Concentration (log<sub>10</sub> pg/\u03BCl)",
-       x = "Cumul. bites (last 7 days)",
+       x = "Number of bites in the long-term",
        color = "") +
   ggtitle(paste0("C - ",c)) +
   scale_color_manual(values = pal) +
@@ -837,7 +837,7 @@ p_mif <- ggplot() + geom_line(data = pred_den, aes(x = bites, y = pred_cyto),
   #                col = ID),
   #            size = 2.5, alpha = 0.8) +
   labs(y = "", # "Concentration (log<sub>10</sub> pg/\u03BCl)",
-       x = "Cumul. bites (last 7 days)",
+       x = "Number of bites in the long-term",
        color = "") +
   ggtitle(paste0("D - ",c)) +
   scale_color_manual(values = pal) +
@@ -857,9 +857,9 @@ p_mif <- ggplot() + geom_line(data = pred_den, aes(x = bites, y = pred_cyto),
         plot.title = element_text(size = 23))
 
 p_long <- p_egf | p_mif
-png(filename = here("output","cytokines","repeated_bites","figures","cytokines_main_long_term.png"), width = 1600, height = 500)
-plot(p_long)
-dev.off()
+# png(filename = here("output","cytokines","repeated_bites","figures","cytokines_main_long_term.png"), width = 1600, height = 500)
+# plot(p_long)
+# dev.off()
 
 p <- p_short / p_long
 
@@ -873,7 +873,7 @@ p_draw <- ggdraw(p) +
   draw_image(image = "~/Documents/POSTDOC/Presentations/Images/macaque_outline.png",
              x = 0.08, y = -0.1, scale = 0.07) #+  draw_plot(p)
 
-png(filename = here("output","cytokines","repeated_bites","figures","cytokines_main_outline.png"), width = 1600, height = 1000)
+png(filename = here("output","figures","cytokines_main_outline.png"), width = 1600, height = 1000)
 print(p_draw)
 dev.off()
 
@@ -959,7 +959,7 @@ p_tgf_long <- ggplot() + geom_line(data = pred_den, aes(x = bites, y = pred_cyto
   #                col = ID),
   #            size = 2.5, alpha = 0.8) +
   labs(y = "Concentration (log<sub>10</sub> pg/\u03BCl)",
-       x = "Cumul. bites (last 7 days)",
+       x = "Number of bites in the long-term",
        color = "") +
   scale_color_manual(values = pal) +
   ggtitle(paste0("A - ",c)) +
@@ -1059,7 +1059,7 @@ p_mcp_long <- ggplot() + geom_line(data = pred_den, aes(x = bites, y = pred_cyto
   #                col = ID),
   #            size = 2.5, alpha = 0.8) +
   labs(y = "", # "Concentration (log<sub>10</sub> pg/\u03BCl)",
-       x = "Cumul. bites (last 7 days)",
+       x = "Number of bites in the long-term",
        color = "") +
   scale_color_manual(values = pal) +
   ggtitle(paste0("B - ",c)) +
@@ -1081,6 +1081,13 @@ p_mcp_long <- ggplot() + geom_line(data = pred_den, aes(x = bites, y = pred_cyto
 
 
 p_suppl <- p_tgf_long | p_mcp_long
-png(filename = here("output","cytokines","repeated_bites","figures","cytokines_suppl.png"), width = 1600, height = 500)
-plot(p_suppl)
+
+p_draw <- ggdraw(p_suppl) + 
+  draw_image(image = "~/Documents/POSTDOC/Presentations/Images/macaque_outline.png",
+             x = -0.41, y = -0.25, scale = 0.12) +
+  draw_image(image = "~/Documents/POSTDOC/Presentations/Images/macaque_outline.png",
+             x = 0.08, y = -0.25, scale = 0.12) #+  draw_plot(p)
+
+png(filename = here("output","figures","cytokines_suppl.png"), width = 1600, height = 500)
+plot(p_draw)
 dev.off()

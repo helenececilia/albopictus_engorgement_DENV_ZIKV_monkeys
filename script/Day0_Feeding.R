@@ -53,14 +53,14 @@ library(ggeffects) # for geom_errorbar
 
 # The Data -----
 # Include cyno high exposure only
-denv_cy <- read.csv(here("output","mosq_feeding_behaviour","DENV_Cyno_data_feeding_behaviour_day0_with_total_correct.csv"))
+denv_cy <- read.csv(here("data","DENV_Cyno_data_feeding_behaviour_day0_with_total_correct.csv"))
 denv_cy <- denv_cy[denv_cy$total != 1,]
 denv_cy$mosq_type <- ifelse(denv_cy$group == "infected","infecting","control")
 denv_cy$species <- "Cyno"
 denv_cy$virus_true <- ifelse(denv_cy$mosq_type == "infecting","Dengue virus","")
 denv_cy$virus_label <- denv_cy$virus_true
 
-denv_sq <- read.csv(here("output","mosq_feeding_behaviour","DENV_Squirrel_data_feeding_behaviour_day0_with_total_correct.csv"))
+denv_sq <- read.csv(here("data","DENV_Squirrel_data_feeding_behaviour_day0_with_total_correct.csv"))
 denv_sq$species <- "Squirrel"
 # two categories : "virus_true" used to quantify virus effect 
 # (co-feeding mosq should not be aggregated with infected mosq for a same virus)
@@ -68,12 +68,12 @@ denv_sq$species <- "Squirrel"
 denv_sq$virus_true <- ifelse(denv_sq$mosq_type == "infecting","Dengue virus","")
 denv_sq$virus_label <- ifelse(denv_sq$mosq_type == "control","","Dengue virus")
 
-zikv_sq <- read.csv(here("output","mosq_feeding_behaviour","ZIKV_Squirrel_data_feeding_behaviour_day0_with_total_correct.csv"))
+zikv_sq <- read.csv(here("data","ZIKV_Squirrel_data_feeding_behaviour_day0_with_total_correct.csv"))
 zikv_sq$species <- "Squirrel"
 zikv_sq$virus_true <- ifelse(zikv_sq$mosq_type == "infecting","Zika virus","")
 zikv_sq$virus_label <- ifelse(zikv_sq$mosq_type == "control","","Zika virus")
 
-zikv_cy <- read.csv(here("output","mosq_feeding_behaviour","ZIKV_Cyno_data_feeding_behaviour_day0.csv"))
+zikv_cy <- read.csv(here("data","ZIKV_Cyno_data_feeding_behaviour_day0.csv"))
 zikv_cy$species <- "Cyno"
 zikv_cy$mosq_type <- ifelse(zikv_cy$group == "infected","infecting","control")
 zikv_cy$virus_true <- ifelse(zikv_cy$mosq_type == "infecting","Zika virus","")
@@ -141,7 +141,12 @@ test$virus_true <- as.factor(test$virus_true)
 # NEW ATTEMPT Simple model with duration incorporated as offset (control and coinf together) ----
 test <- test[!is.na(test$int_duration),]
 
-# These two formulations are strictly equivalent
+# These three formulations are strictly equivalent
+# m0 <- glmmTMB(nb_fed_day0/total ~ virus_true*species + offset(log(int_duration)),
+#               data = test,
+#               weights = total,
+#               family = binomial(link = "logit"),
+#               REML = F)
 # m0 <- glmmTMB(cbind(nb_fed_day0,total - nb_fed_day0) ~ group_agg + offset(log(int_duration)),
 #               data = test,
 #               family = binomial(link = "logit"),
@@ -214,8 +219,8 @@ newDat$total <- 15
 newDat$virus_true <- c("Zika virus",
                        "Control",
                        "Zika virus",
-                       "Dengue virus",
-                       "Dengue virus",
+                       "Dengue-2 virus",
+                       "Dengue-2 virus",
                        "Control")
 pred <- predict(m1, newdata = newDat, se.fit = T)
 newDat$pred <- plogis(pred$fit)
@@ -236,13 +241,13 @@ p0 <- ggplot(newDat, aes(x = as.character(group_agg), y = pred)) +
              color = "#414341",
              stroke = 1.5,
              size = 6) +
-  scale_fill_manual(values = c("Dengue virus" = "#1c812b",
+  scale_fill_manual(values = c("Dengue-2 virus" = "#1c812b",
                                "Zika virus" = "#253dbe",
                                "Control" = "#C2c3c9")) +
-  scale_color_manual(values = c("Dengue virus" = "#1c812b",
+  scale_color_manual(values = c("Dengue-2 virus" = "#1c812b",
                                 "Zika virus" = "#253dbe",
                                 "Control" = "#C2c3c9")) +
-  scale_shape_manual(values = c("Dengue virus" = 21,
+  scale_shape_manual(values = c("Dengue-2 virus" = 21,
                                 "Zika virus" = 22,
                                 "Control" = 24)) +
   geom_vline(xintercept = 3.5, alpha = 0.6, linewidth = 1.1, color = "grey") +
@@ -262,9 +267,9 @@ p0 <- ggplot(newDat, aes(x = as.character(group_agg), y = pred)) +
                y.position = 1.64, label = "ns", size = 1.3, label.size = 11) +
   labs(y = "Predicted probability<br>of feeding",
        x = "",
-       fill = "Mosquito status",
-       color = "Mosquito status",
-       shape = "Mosquito status") +
+       fill = "Mosquito\ninfection status",
+       color = "Mosquito\ninfection status",
+       shape = "Mosquito\ninfection status") +
   ggtitle("A") +
   guides(fill = guide_legend(order = 1,
                              override.aes = list(alpha = 1, size = 5, linewidth = 1)),
@@ -349,7 +354,7 @@ p_draw <- ggdraw() +
              x = 0.51, y = 0.87, scale = 0.1,
              valign = 0, halign = 0)
 
-png(filename = here("output","mosq_feeding_behaviour","figures","Day0_no_duration_errorbar.png"),
+png(filename = here("output","figures","Day0_no_duration_errorbar.png"),
     width = 1600, height = 1600)
 print(p_draw)
 dev.off()

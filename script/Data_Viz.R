@@ -58,22 +58,22 @@ hms_to_decimal_day <-function(time_hms){
 }
 
 # Engorgement data after day 0 ----
-zikv_sq_data <- read.csv("../output/mosq_feeding_behaviour/ZIKV_Squirrel_data_feeding_behaviour_with_total_correct.csv")
+zikv_sq_data <- read.csv("../data/ZIKV_Squirrel_data_feeding_behaviour_with_total_correct.csv")
 zikv_sq_data$species <- "Squirrel"
 zikv_sq_data$virus <- "Zika"
 zikv_sq_data$virus[zikv_sq_data$group == "control"] <- "none"
 
-zikv_cy_data <- read.csv("../output/mosq_feeding_behaviour/ZIKV_Cyno_data_feeding_behaviour.csv")
+zikv_cy_data <- read.csv("../data/ZIKV_Cyno_data_feeding_behaviour.csv")
 zikv_cy_data$species <- "Cyno"
 zikv_cy_data$virus <- "Zika"
 zikv_cy_data$raw_file_inspected <- TRUE
 
-denv_sq_data <- read.csv("../output/mosq_feeding_behaviour/DENV_Squirrel_data_feeding_behaviour_with_total_correct.csv")
+denv_sq_data <- read.csv("../data/DENV_Squirrel_data_feeding_behaviour_with_total_correct.csv")
 denv_sq_data$species <- "Squirrel"
 denv_sq_data$virus <- "Dengue"
 denv_sq_data$virus[denv_sq_data$group == "control"] <- "none"
 
-denv_cy_data <- read.csv("../output/mosq_feeding_behaviour/DENV_Cyno_data_feeding_behaviour_with_total_correct.csv")
+denv_cy_data <- read.csv("../data/DENV_Cyno_data_feeding_behaviour_with_total_correct.csv")
 denv_cy_data$species <- "Cyno"
 denv_cy_data$virus <- "Dengue"
 denv_cy_data$virus[denv_cy_data$group == "control"] <- "none"
@@ -99,18 +99,18 @@ my_data$total <- my_data$total_correct
 eng1 <- my_data # 331 obs
 
 # Temperature data ----
-df1 <- read.csv("~/Documents/POSTDOC/final_repositories/hanley_2023_sylvatic_DENV_ZIKV_trade_offs/data/Temperatures_Sylvatic_DENV-2_Cynomolgus_Macaques.csv")
-df2 <- read.csv("~/Documents/POSTDOC/final_repositories/hanley_2023_sylvatic_DENV_ZIKV_trade_offs/data/Temperatures_Sylvatic_DENV-2_Squirrel_Monkeys.csv")
-df3 <- read.csv("~/Documents/POSTDOC/final_repositories/hanley_2023_sylvatic_DENV_ZIKV_trade_offs/data/Temperatures_Sylvatic_ZIKV_Squirrel_Monkeys.csv")
-df4 <- read.csv("~/Documents/POSTDOC/final_repositories/hanley_2023_sylvatic_DENV_ZIKV_trade_offs/data/Temperatures_Sylvatic_ZIKV_Cynomolgus_Macaques.csv")
+df1 <- read.csv("../data/Temperatures_Sylvatic_DENV-2_Cynomolgus_Macaques.csv")
+df2 <- read.csv("../data/Temperatures_Sylvatic_DENV-2_Squirrel_Monkeys.csv")
+df3 <- read.csv("../data/Temperatures_Sylvatic_ZIKV_Squirrel_Monkeys.csv")
+df4 <- read.csv("../data/Temperatures_Sylvatic_ZIKV_Cynomolgus_Macaques.csv")
 
-treat1 <- read.csv("~/Documents/POSTDOC/final_repositories/hanley_2023_sylvatic_DENV_ZIKV_trade_offs/data/Table_S1_Sylvatic_DENV-2_Cynomolgus_Macaques.csv",
+treat1 <- read.csv("../data/Table_S1_Sylvatic_DENV-2_Cynomolgus_Macaques.csv",
                    dec = ".", sep  ="\t")
-treat2 <- read.csv("~/Documents/POSTDOC/final_repositories/hanley_2023_sylvatic_DENV_ZIKV_trade_offs/data/Table_S2_Sylvatic_DENV-2_Squirrel_Monkeys.csv",
+treat2 <- read.csv("../data/Table_S2_Sylvatic_DENV-2_Squirrel_Monkeys.csv",
                    dec = ".", sep  ="\t")
-treat3 <- read.csv("~/Documents/POSTDOC/final_repositories/hanley_2023_sylvatic_DENV_ZIKV_trade_offs/data/Table_S3_Sylvatic_ZIKV_Squirrel_Monkeys.csv",
+treat3 <- read.csv("../data/Table_S4_Sylvatic_ZIKV_Squirrel_Monkeys.csv",
                    dec = ".", sep  ="\t")
-treat4 <- read.csv("~/Documents/POSTDOC/final_repositories/hanley_2023_sylvatic_DENV_ZIKV_trade_offs/data/Table_S4_Sylvatic_ZIKV_Cynomolgus_Macaques.csv",
+treat4 <- read.csv("../data/Table_S3_Sylvatic_ZIKV_Cynomolgus_Macaques.csv",
                    dec = ".", sep  ="\t")
 
 treat1 <- unique(treat1[,c("ID","Final.Treatment")])
@@ -199,11 +199,11 @@ df4_cut <- df4_cut[df4_cut$Day != 0,]
 
 df1_cut$monkey_status <- df1_cut$group
 df1_cut$monkey_status[df1_cut$group == "control"] <- "Control"
-df1_cut$monkey_status[df1_cut$group != "control"] <- "Dengue virus"
+df1_cut$monkey_status[df1_cut$group != "control"] <- "Dengue-2 virus"
 
 df2_cut$monkey_status <- df2_cut$group
 df2_cut$monkey_status[df2_cut$group == "control"] <- "Control"
-df2_cut$monkey_status[df2_cut$group != "control"] <- "Dengue virus"
+df2_cut$monkey_status[df2_cut$group != "control"] <- "Dengue-2 virus"
 
 df3_cut$monkey_status <- df3_cut$group
 df3_cut$monkey_status[df3_cut$group == "control"] <- "Control"
@@ -216,16 +216,16 @@ df4_cut$monkey_status[df4_cut$group != "control"] <- "Zika virus"
 eng1$monkey_status <- eng1$virus
 eng1$monkey_status <- as.character(eng1$monkey_status)
 eng1$monkey_status[eng1$monkey_status == "none"] <- "Control"
-eng1$monkey_status[eng1$monkey_status == "Dengue"] <- "Dengue virus"
+eng1$monkey_status[eng1$monkey_status == "Dengue"] <- "Dengue-2 virus"
 eng1$monkey_status[eng1$monkey_status == "Zika"] <- "Zika virus"
 
 # to plot control points on top (not working?)
 eng1$monkey_status <- factor(eng1$monkey_status,
-                             levels = c("Dengue virus", "Zika virus", "Control"))
+                             levels = c("Dengue-2 virus", "Zika virus", "Control"))
 df1_cut$monkey_status <- factor(df1_cut$monkey_status,
-                                levels = c("Dengue virus", "Control"))
+                                levels = c("Dengue-2 virus", "Control"))
 df2_cut$monkey_status <- factor(df2_cut$monkey_status,
-                                levels = c("Dengue virus", "Control"))
+                                levels = c("Dengue-2 virus", "Control"))
 df3_cut$monkey_status <- factor(df3_cut$monkey_status,
                                 levels = c("Zika virus", "Control"))
 df4_cut$monkey_status <- factor(df4_cut$monkey_status,
@@ -286,17 +286,17 @@ pd1 <- ggplot() + geom_line(data = df1_cut,
                  shape = monkey_status),
              color = "#414341",
              size = 4, alpha = 0.4) +
-  scale_fill_manual(values = c("Dengue virus" = "#1c812b",
+  scale_fill_manual(values = c("Dengue-2 virus" = "#1c812b",
                                "Zika virus" = "#253dbe",
                                "Control" = "#C2c3c9")) +
-  scale_color_manual(values = c("Dengue virus" = "#1c812b",
+  scale_color_manual(values = c("Dengue-2 virus" = "#1c812b",
                                 "Zika virus" = "#253dbe",
                                 "Control" = "#C2c3c9")) +
-  scale_shape_manual(values = c("Dengue virus" = 21,
+  scale_shape_manual(values = c("Dengue-2 virus" = 21,
                                 "Zika virus" = 22,
                                 "Control" = 24)) +
-  labs(x = "", y = expression("Temperature " ( degree*C)),
-       color = "Monkey status", fill = "Monkey status", shape = "Monkey status") +
+  labs(x = "", y = expression("Body temperature " ( degree*C)),
+       color = "Monkey infection status", fill = "Monkey infection status", shape = "Monkey infection status") +
   coord_cartesian(xlim = c(0,1), ylim = c(34,40.7)) +
   guides(color = guide_legend(override.aes = list(alpha = 1, linewidth = 1.75)),
          fill = guide_legend(override.aes = list(size = 3.5))) +
@@ -313,7 +313,7 @@ pd1 <- ggplot() + geom_line(data = df1_cut,
         legend.title = element_text(size = 28), 
         plot.title = element_text(size = 27),
         panel.grid.minor.x = element_blank(),
-        legend.position = "bottom",
+        legend.position = "top",
         legend.key.width = unit(1, "cm"),
         plot.margin = margin(0,26,0,0))
 #pd1
@@ -338,13 +338,13 @@ pd2 <- ggplot() + geom_line(data = df2_cut,
                  shape = monkey_status),
              color = "#414341",
              size = 4, alpha = 0.4) +
-  scale_fill_manual(values = c("Dengue virus" = "#1c812b",
+  scale_fill_manual(values = c("Dengue-2 virus" = "#1c812b",
                                "Zika virus" = "#253dbe",
                                "Control" = "#C2c3c9")) +
-  scale_color_manual(values = c("Dengue virus" = "#1c812b",
+  scale_color_manual(values = c("Dengue-2 virus" = "#1c812b",
                                 "Zika virus" = "#253dbe",
                                 "Control" = "#C2c3c9")) +
-  scale_shape_manual(values = c("Dengue virus" = 21,
+  scale_shape_manual(values = c("Dengue-2 virus" = 21,
                                 "Zika virus" = 22,
                                 "Control" = 24)) +
   labs(x = "", y = "",
@@ -364,7 +364,7 @@ pd2 <- ggplot() + geom_line(data = df2_cut,
         legend.text = element_text(size = 28),
         plot.title = element_text(size = 27),
         panel.grid.minor.x = element_blank(),
-        legend.position = "bottom",
+        legend.position = "top",
         legend.key.width = unit(1, "cm"),
         plot.margin = margin(0,22,0,0))
 # pd2
@@ -389,13 +389,13 @@ pd3 <- ggplot() + geom_line(data = df3_cut,
                  shape = monkey_status),
              color = "#414341",
              size = 4, alpha = 0.4) +
-  scale_fill_manual(values = c("Dengue virus" = "#1c812b",
+  scale_fill_manual(values = c("Dengue-2 virus" = "#1c812b",
                                "Zika virus" = "#253dbe",
                                "Control" = "#C2c3c9")) +
-  scale_color_manual(values = c("Dengue virus" = "#1c812b",
+  scale_color_manual(values = c("Dengue-2 virus" = "#1c812b",
                                 "Zika virus" = "#253dbe",
                                 "Control" = "#C2c3c9")) +
-  scale_shape_manual(values = c("Dengue virus" = 21,
+  scale_shape_manual(values = c("Dengue-2 virus" = 21,
                                 "Zika virus" = 22,
                                 "Control" = 24)) +
   labs(x = "Time of day", y = "",
@@ -441,16 +441,16 @@ pd4 <- ggplot() + geom_line(data = df4_cut,
                  shape = monkey_status),
              color = "#414341",
              size = 4, alpha = 0.4) +
-  scale_fill_manual(values = c("Dengue virus" = "#1c812b",
+  scale_fill_manual(values = c("Dengue-2 virus" = "#1c812b",
                                "Zika virus" = "#253dbe",
                                "Control" = "#C2c3c9")) +
-  scale_color_manual(values = c("Dengue virus" = "#1c812b",
+  scale_color_manual(values = c("Dengue-2 virus" = "#1c812b",
                                 "Zika virus" = "#253dbe",
                                 "Control" = "#C2c3c9")) +
-  scale_shape_manual(values = c("Dengue virus" = 21,
+  scale_shape_manual(values = c("Dengue-2 virus" = 21,
                                 "Zika virus" = 22,
                                 "Control" = 24)) +
-  labs(x = "Time of day", y = expression("Temperature " ( degree*C)),
+  labs(x = "Time of day", y = expression("Body temperature " ( degree*C)),
        color = "", fill = "", shape = "") +
   coord_cartesian(xlim = c(0,1), ylim = c(34,40.7)) +
   scale_x_continuous(breaks = c(0,0.25,0.5,0.75,1),
@@ -479,13 +479,13 @@ img_squirrel <- magick::image_read("~/Documents/POSTDOC/Presentations/Images/squ
 p1 <- ggdraw() + 
   draw_plot(pd1) +
   draw_image(image = img_cyno, 
-             x = 0.15, y = 0.78, scale = 0.15,
+             x = 0.15, y = 0.71, scale = 0.15,
              valign = 0, halign = 0)
 
 p2 <- ggdraw() + 
   draw_plot(pd2) +
   draw_image(image = img_squirrel, 
-             x = 0.12, y = 0.78, scale = 0.15,
+             x = 0.12, y = 0.71, scale = 0.15,
              valign = 0, halign = 0)
 
 p3 <- ggdraw() + 
@@ -503,7 +503,7 @@ p4 <- ggdraw() +
 
 pd <- (p1|p2)/(p4|p3)
 
-png(filename = "../output/mosq_feeding_behaviour/figures/temperature_feeding_time_suppl.png",
+png(filename = "../output/figures/temperature_feeding_time_suppl.png",
     width = 1950, height = 1300)
 print(pd)
 dev.off()
@@ -525,13 +525,13 @@ ptt1 <- ggplot(eng1[eng1$species == "Cyno" & eng1$virus %in% c("none","Dengue"),
              size = 5,
              alpha = 0.65,
              stroke = 1.2) +
-  scale_fill_manual(values = c("Dengue virus" = "#1c812b",
+  scale_fill_manual(values = c("Dengue-2 virus" = "#1c812b",
                                "Zika virus" = "#253dbe",
                                "Control" = "grey")) +
-  scale_color_manual(values = c("Dengue virus" = "#1c812b",
+  scale_color_manual(values = c("Dengue-2 virus" = "#1c812b",
                                 "Zika virus" = "#253dbe",
                                 "Control" = "#414341")) +
-  scale_shape_manual(values = c("Dengue virus" = 21,
+  scale_shape_manual(values = c("Dengue-2 virus" = 21,
                                 "Zika virus" = 22,
                                 "Control" = 24)) +
   # scale_size(limits=c(0,1),
@@ -544,9 +544,9 @@ ptt1 <- ggplot(eng1[eng1$species == "Cyno" & eng1$virus %in% c("none","Dengue"),
   scale_x_continuous(breaks = c(36,37,38,39,40)) +
   labs(x = "",
        y = "Proportion of fed mosquitoes",
-       fill = bquote(bold("Monkey status")),
-       color = bquote(bold("Monkey status")),
-       shape = bquote(bold("Monkey status"))) +
+       fill = bquote(bold("Monkey infection status")),
+       color = bquote(bold("Monkey infection status")),
+       shape = bquote(bold("Monkey infection status"))) +
   ggtitle("A") +
   # annotate(geom = "text", label = "A",
   #          x = 36.82, y = 1.23, size = 10) +
@@ -580,13 +580,13 @@ ptt2 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Dengu
              size = 5,
              alpha = 0.65,
              stroke = 1.2) +
-  scale_fill_manual(values = c("Dengue virus" = "#1c812b",
+  scale_fill_manual(values = c("Dengue-2 virus" = "#1c812b",
                                "Zika virus" = "#253dbe",
                                "Control" = "grey")) +
-  scale_color_manual(values = c("Dengue virus" = "#1c812b",
+  scale_color_manual(values = c("Dengue-2 virus" = "#1c812b",
                                 "Zika virus" = "#253dbe",
                                 "Control" = "#414341")) +
-  scale_shape_manual(values = c("Dengue virus" = 21,
+  scale_shape_manual(values = c("Dengue-2 virus" = 21,
                                 "Zika virus" = 22,
                                 "Control" = 24)) +
   # scale_size(limits=c(0,1),
@@ -627,13 +627,13 @@ ptt3 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Zika"
              size = 5,
              alpha = 0.65,
              stroke = 1.2) +
-  scale_fill_manual(values = c("Dengue virus" = "#1c812b",
+  scale_fill_manual(values = c("Dengue-2 virus" = "#1c812b",
                                "Zika virus" = "#253dbe",
                                "Control" = "grey")) +
-  scale_color_manual(values = c("Dengue virus" = "#1c812b",
+  scale_color_manual(values = c("Dengue-2 virus" = "#1c812b",
                                 "Zika virus" = "#253dbe",
                                 "Control" = "#414341")) +
-  scale_shape_manual(values = c("Dengue virus" = 21,
+  scale_shape_manual(values = c("Dengue-2 virus" = 21,
                                 "Zika virus" = 22,
                                 "Control" = 24)) +
   # scale_size(limits=c(0,1),
@@ -644,7 +644,7 @@ ptt3 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Zika"
   coord_cartesian(ylim = c(0,1),
                   xlim = c(min(eng1$temp_estim_feed), max(eng1$temp_estim_feed))) +
   scale_x_continuous(breaks = c(36,37,38,39,40)) +
-  labs(x = expression("Temperature " ( degree*C)),
+  labs(x = expression("Body temperature " ( degree*C)),
        y = "",
        fill = "", color = "", shape = "") +
   ggtitle("D") +
@@ -658,7 +658,7 @@ ptt3 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Zika"
         legend.title = element_text(size = 28),
         legend.text = element_text(size = 28),
         panel.grid.minor.x = element_blank(),
-        legend.position = "top",
+        legend.position = "bottom",
         legend.box = "vertical",
         # legend.key.width = unit(1.5, "cm"),
         plot.margin = margin(2,10,0,10),
@@ -674,13 +674,13 @@ ptt4 <- ggplot(eng1[eng1$species == "Cyno" & eng1$virus %in% c("none","Zika"),])
              size = 5,
              alpha = 0.65,
              stroke = 1.2) +
-  scale_fill_manual(values = c("Dengue virus" = "#1c812b",
+  scale_fill_manual(values = c("Dengue-2 virus" = "#1c812b",
                                "Zika virus" = "#253dbe",
                                "Control" = "grey")) +
-  scale_color_manual(values = c("Dengue virus" = "#1c812b",
+  scale_color_manual(values = c("Dengue-2 virus" = "#1c812b",
                                 "Zika virus" = "#253dbe",
                                 "Control" = "#414341")) +
-  scale_shape_manual(values = c("Dengue virus" = 21,
+  scale_shape_manual(values = c("Dengue-2 virus" = 21,
                                 "Zika virus" = 22,
                                 "Control" = 24)) +
   # scale_size(limits=c(0,1),
@@ -691,7 +691,7 @@ ptt4 <- ggplot(eng1[eng1$species == "Cyno" & eng1$virus %in% c("none","Zika"),])
   coord_cartesian(ylim = c(0,1),
                   xlim = c(min(eng1$temp_estim_feed), max(eng1$temp_estim_feed))) +
   scale_x_continuous(breaks = c(36,37,38,39,40)) +
-  labs(x = expression("Temperature " ( degree*C)),
+  labs(x = expression("Body temperature " ( degree*C)),
        y = "Proportion of fed mosquitoes",
        fill = "", color = "", shape = "") +
   ggtitle("C") +
@@ -705,7 +705,7 @@ ptt4 <- ggplot(eng1[eng1$species == "Cyno" & eng1$virus %in% c("none","Zika"),])
         legend.title = element_text(size = 28),
         legend.text = element_text(size = 28),
         panel.grid.minor.x = element_blank(),
-        legend.position = "top",
+        legend.position = "bottom",
         legend.box = "vertical",
         # legend.key.width = unit(1.5, "cm"),
         plot.margin = margin(2,10,0,10),
@@ -730,19 +730,19 @@ p2 <- ggdraw() +
 p3 <- ggdraw() + 
   draw_plot(ptt3) +
   draw_image(image = img_squirrel, 
-             x = 0.85, y = 0.15, scale = 0.15,
+             x = 0.85, y = 0.22, scale = 0.15,
              valign = 0, halign = 0)
 
 p4 <- ggdraw() + 
   draw_plot(ptt4) +
   draw_image(image = img_cyno, 
-             x = 0.85, y = 0.15, scale = 0.15,
+             x = 0.85, y = 0.22, scale = 0.15,
              valign = 0, halign = 0)
 
 # p <- (p1 | p2)/(p4 | p3)
 p <- (p1/p4)|(p2/p3)
 
-png(filename = "../output/mosq_feeding_behaviour/figures/temperature_engorgement.png",
+png(filename = "../output/figures/temperature_engorgement.png",
     width = 1950, height = 1300)
 print(p)
 dev.off()

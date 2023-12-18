@@ -28,7 +28,7 @@ getwd()
 
 ## -------------------------------
 
-df <- read.csv("../data/Ae_albopictus/Approach_rate_060623.csv", sep = "\t", dec = ".")
+df <- read.csv("../data/Approach_rate_060623.csv", sep = "\t", dec = ".")
 df <- df %>% clean_names()
 
 stat <- df %>% dplyr::group_by(collection_window) %>%
@@ -110,7 +110,7 @@ p <- ggplot(optimum) +
               size = 5) +
   labs(shape = "Collector",
        x = "") +
-  scale_y_continuous(name = "Nb approached female Ae. albopictus",
+  scale_y_continuous(name = "Number approached female Ae. albopictus",
                      limits = c(-0.05,6.2)) + 
   scale_shape_manual(values = c("A" = 0,
                                 "B" = 16,
@@ -137,7 +137,7 @@ p_draw <- ggdraw() +
              x = 0.1, y = 0.8, scale = 0.15,
              valign = 0, halign = 0)
 
-png(filename = "../output/mosq_feeding_behaviour/figures/approach_optimum_conditions.png",
+png(filename = "../output/figures/approach_optimum_conditions.png",
     height = 800, width = 1600)
 plot(p_draw)
 dev.off()
