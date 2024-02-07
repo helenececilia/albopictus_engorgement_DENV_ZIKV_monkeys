@@ -1,0 +1,821 @@
+---
+title: "Drivers of uninfected mosquitoes engorgement on non-human primate hosts"
+author: "Helene Cecilia"
+format: html
+---
+```{r}
+#| include: false
+
+rm(list=ls())
+
+library(ggdist)
+library(tidyverse)
+library(patchwork)
+library(scales)
+library(DHARMa)
+library(glmmTMB)
+library(effects)
+library(MASS)
+library(mgcv)
+library(readxl)
+library(lubridate)
+library(hms)
+library(chron)
+library(MuMIn) # for r.squaredGLMM
+library(janitor) # for clean_names
+library(multcomp) # for glht
+library(ggtext) # for element_markdown
+library(Hmisc) # for Cs
+library(ggpubr) # for stat_compare_means
+library(cowplot) # for draw_image
+library(magick) # for draw_image / note : installed through command line, error in Rstudio
+library(broom) # for tidy
+library(marginaleffects) # for datagrid, predictions
+library(stringr) # for str_split
+```
+
+
+```{r}
+#| label: load-data
+df1 <- read.csv("../data/DENV_Cyno_data_engorgement.csv")
+df1$NHP <- "Cyno"
+df1$virus <- "Dengue virus"
+
+df2 <- read.csv("../data/DENV_Squirrel_data_engorgement.csv")
+df2$NHP <- "Squirrel"
+df2$virus <- "Dengue virus"
+
+df3 <- read.csv("../data/ZIKV_Squirrel_data_engorgement.csv")
+df3$NHP <- "Squirrel"
+df3$virus <- "Zika virus"
+# removing controls as they're already in df2
+df3 <- df3[df3$group != "control",]
+
+df4 <- read.csv("../data/ZIKV_Cyno_data_engorgement.csv")
+df4$NHP <- "Cyno"
+df4$virus <- "Zika virus"
+
+# no subsetting
+df <- rbind(df1,df2,df3,df4)
+
+# Exclude day 28
+df <- df[df$day != 28,]
+
+feed_duration <- str_split(df$feed_duration,":")
+vec_duration <- sapply(feed_duration,"[[",2)
+df$int_duration <- as.integer(vec_duration)
+
+summary(df$int_duration)
+
+df$monkey_status <- df$virus
+df$monkey_status[which(df$group == "control")] <- "Control"
+
+df$monkey_status <- as.factor(df$monkey_status)
+df <- within(df, monkey_status <- relevel(monkey_status, ref = "Dengue virus"))
+
+df$NHP <- as.factor(df$NHP)
+df <- within(df, NHP <- relevel(NHP, ref = "Squirrel"))
+
+df$group_agg <- interaction(df$NHP,df$monkey_status)
+df$group_agg <- gsub(" ","_",df$group_agg) # no space for posthoc test to work
+df$group_agg <- as.factor(df$group_agg)
+df <- within(df, group_agg <- relevel(group_agg, ref = "Squirrel.Dengue_virus"))
+
+df$prop <- df$nb_fed/df$total
+```
+
+```{r}
+#| label: load-data-subset-viremia-window
+df1 <- read.csv("../data/DENV_Cyno_data_engorgement.csv")
+df1$NHP <- "Cyno"
+df1$virus <- "Dengue virus"
+
+df2 <- read.csv("../data/DENV_Squirrel_data_engorgement.csv")
+df2$NHP <- "Squirrel"
+df2$virus <- "Dengue virus"
+df2$mosq_type <- NULL
+
+df3 <- read.csv("../data/ZIKV_Squirrel_data_engorgement.csv")
+df3$NHP <- "Squirrel"
+df3$virus <- "Zika virus"
+# removing controls as they're already in df2
+df3 <- df3[df3$group != "control",]
+
+df4 <- read.csv("../data/ZIKV_Cyno_data_engorgement.csv")
+df4$NHP <- "Cyno"
+df4$virus <- "Zika virus"
+
+# # subsetting : days with possible viremia / 2nd AICc values
+control1 <- df1[df1$group == "control",] # no subsetting for controls
+control2 <- df2[df2$group == "control",] # no subsetting for controls
+df1_ <- df1[df1$group != "control",]
+df2_ <- df2[df2$group != "control",]
+denv_cy <- df1_[df1_$day %in% seq(1,14),]
+denv_sq <- df2_[df2_$day %in% seq(1,14),]
+zikv_sq <- df3[df3$day %in% seq(1,8),]
+zikv_cy <- df4[df4$day %in% seq(1,8),]
+control <- rbind(control1, control2)
+df_sub <- rbind(denv_cy, denv_sq, zikv_sq, zikv_cy, control)
+
+# Exclude day 28
+df_sub <- df_sub[df_sub$day != 28,]
+
+feed_duration <- str_split(df_sub$feed_duration,":")
+vec_duration <- sapply(feed_duration,"[[",2)
+df_sub$int_duration <- as.integer(vec_duration)
+
+summary(df_sub$int_duration)
+
+df_sub$monkey_status <- df_sub$virus
+df_sub$monkey_status[which(df_sub$group == "control")] <- "Control"
+
+df_sub$monkey_status <- as.factor(df_sub$monkey_status)
+df_sub <- within(df_sub, monkey_status <- relevel(monkey_status, ref = "Dengue virus"))
+
+df_sub$NHP <- as.factor(df_sub$NHP)
+df_sub <- within(df_sub, NHP <- relevel(NHP, ref = "Squirrel"))
+
+df_sub$group_agg <- interaction(df_sub$NHP,df_sub$monkey_status)
+df_sub$group_agg <- gsub(" ","_",df_sub$group_agg) # no space for posthoc test to work
+df_sub$group_agg <- as.factor(df_sub$group_agg)
+df_sub <- within(df_sub, group_agg <- relevel(group_agg, ref = "Squirrel.Dengue_virus"))
+
+df_sub$prop <- df_sub$nb_fed/df_sub$total
+```
+
+```{r}
+#| label: simple-model
+#| echo: false
+
+# Replace df by df_sub if you want to run the models on the subset of days where viremia was detected
+
+# Different values of AICc :
+# First value of a line : without subsetting
+# Second value : with subsetting (replace df by df_sub)
+# Third value : including data on day 28 
+
+# strictly equivalent to group_agg syntax
+# m0 <- glmmTMB(nb_fed/total ~ NHP*monkey_status + offset(log(int_duration)),
+#               data = df,
+#               family = binomial(link = "logit"),
+#               weights = total,
+#               REML = F)
+
+m0 <- glmmTMB(nb_fed/total ~ group_agg + offset(log(int_duration)),
+              data = df,
+              family = binomial(link = "logit"),
+              weights = total,
+              REML = F)
+MuMIn::AICc(m0) # 1685.655 / 1395.776 / 1914.698
+
+m1 <- glmmTMB(nb_fed/total ~ group_agg + offset(log(int_duration)),
+                   data = df,
+                   family = betabinomial(link = "logit"),
+                   weights = total,
+                   dispformula = ~1,
+                   REML = F)
+MuMIn::AICc(m1) # 1410.098 / 1159.334 / 1586.409
+
+anova(m0,m1)  # signif
+
+m2 <- glmmTMB(nb_fed/total ~ group_agg + offset(log(int_duration)) + (1|ID),
+              data = df,
+              family = binomial(link = "logit"),
+              weights = total,
+              REML = F)
+MuMIn::AICc(m2) # 1656.872 / 1356.373 / 1872.403
+
+anova(m0,m2) # signif
+
+m3 <- glmmTMB(nb_fed/total ~ group_agg + offset(log(int_duration)) + (1|ID),
+              data = df,
+              family = betabinomial(link = "logit"),
+              weights = total,
+              dispformula = ~1 ,
+              REML = F)
+MuMIn::AICc(m3)  # 1412.212 / 1161.397 / 1588.468
+
+anova(m2,m3) # signif
+anova(m1,m3) # not signif
+
+# saveRDS(m1, "../output/engorgement_models/host_infection_simple.rds")
+m1 <- readRDS("../output/engorgement_models/host_infection_simple.rds")
+# with or without subsetting, m1 retained
+summary(m1)
+
+# Note : this is equivalent to a model with formula  ~ NHP*monkey_status
+comp <-  c("Cyno.Dengue_virus - Squirrel.Dengue_virus = 0",
+            "Cyno.Zika_virus - Squirrel.Zika_virus = 0",
+            "Cyno.Control - Squirrel.Control = 0",
+            "Cyno.Dengue_virus - Cyno.Control = 0",
+            "Cyno.Zika_virus - Cyno.Control = 0",
+            "Squirrel.Dengue_virus - Squirrel.Control = 0",
+            "Squirrel.Zika_virus - Squirrel.Control = 0")
+tuk = glht(m1, linfct = mcp(group_agg = comp)) 
+
+summary(tuk, test = adjusted("none")) # effect of species : DENV & control + ZIKV/control cyno 
+summary(tuk, test = adjusted("fdr")) # same 
+
+res <- tidy(confint(tuk))
+res$estimate <- exp(res$estimate)
+res$conf.low <- exp(res$conf.low)
+res$conf.high <- exp(res$conf.high)
+
+# Extract fixed effects coefficients and exponentiate them
+# equivalent to what is done above, but less practical to extract all wanted comparisons
+fixed_effects <- fixef(m1)$cond
+odds_ratios <- exp(fixed_effects)
+
+```
+
+```{r}
+#| label: plot-results-simple-model
+#| echo: false
+
+newDat <- data.frame(group_agg = unique(df$group_agg))
+newDat$int_duration <- median(df$int_duration) # 6 minutes
+newDat$total <- 15
+
+pred <- predict(m1, newdata = newDat, se.fit = T)
+newDat$pred <- plogis(pred$fit)
+# newDat$pred2 <- exp(pred$fit)/(1+exp(pred$fit)) # strictly equivalent
+# pred2 <- predict(m1, newdata = newDat, se.fit = T, type = "response") # strictly equivalent
+# plogis(pred$fit) # these are probabilities
+# exp(pred$fit) # these are the odds : p/(1-p)
+# from odds you can compute odd ratios
+newDat$lwr <- plogis(pred$fit - 1.96*pred$se.fit)
+newDat$upr <- plogis(pred$fit + 1.96*pred$se.fit)
+
+newDat$monkey_status <- c("Dengue-2 virus",
+                       "Control",
+                       "Dengue-2 virus",
+                       "Control",
+                       "Zika virus",
+                       "Zika virus")
+
+# Model output only (assume equal duration) ----
+
+# Change order of boxplots
+df$group_agg <- factor(df$group_agg, levels = c("Cyno.Control",
+                                                "Cyno.Dengue_virus",
+                                                "Cyno.Zika_virus",
+                                                "Squirrel.Control",
+                                                "Squirrel.Dengue_virus",
+                                                "Squirrel.Zika_virus"))
+
+p0 <- ggplot(newDat, aes(x = as.character(group_agg), y = pred)) +
+  geom_errorbar(aes(x = as.character(group_agg),
+                    ymin = lwr, ymax = upr,
+                    color = monkey_status),
+                width = 0.1, linewidth = 1.3) +
+  geom_point(aes(x = as.character(group_agg),
+                 fill = monkey_status,
+                 shape = monkey_status),
+             color = "#414341",
+             stroke = 1.5,
+             size = 6) +
+  scale_fill_manual(values = c("Dengue-2 virus" = "#1c812b",
+                               "Zika virus" = "#253dbe",
+                               "Control" = "#C2c3c9")) +
+  scale_color_manual(values = c("Dengue-2 virus" = "#1c812b",
+                                "Zika virus" = "#253dbe",
+                                "Control" = "#C2c3c9")) +
+  scale_shape_manual(values = c("Dengue-2 virus" = 21,
+                                "Zika virus" = 22,
+                                "Control" = 24)) +
+  geom_vline(xintercept = 3.5, alpha = 0.6, linewidth = 1.1, color = "grey") +
+  geom_bracket(xmin = "Squirrel.Control", xmax = "Squirrel.Zika_virus",
+               y.position = 1.22, label = "ns", size = 1.3, label.size = 11) +
+  geom_bracket(xmin = "Cyno.Control", xmax = "Cyno.Zika_virus",
+               y.position = 1.22, label = "***", size = 1.3, label.size = 11) +
+  geom_bracket(xmin = "Squirrel.Control", xmax = "Squirrel.Dengue_virus",
+               y.position = 1.08, label = "ns", size = 1.3, label.size = 11) +
+  geom_bracket(xmin = "Cyno.Control", xmax = "Cyno.Dengue_virus",
+               y.position = 1.08, label = "ns", size = 1.3, label.size = 11) +
+  geom_bracket(xmin = "Cyno.Control", xmax = "Squirrel.Control",
+               y.position = 1.36, label = "**", size = 1.3, label.size = 11) +
+  geom_bracket(xmin = "Cyno.Dengue_virus", xmax = "Squirrel.Dengue_virus",
+               y.position = 1.5, label = "****", size = 1.3, label.size = 11) +
+  geom_bracket(xmin = "Cyno.Zika_virus", xmax = "Squirrel.Zika_virus",
+               y.position = 1.64, label = "ns", size = 1.3, label.size = 11) +
+  labs(y = "Predicted probability<br>of engorging",
+       x = "",
+       fill = "Monkey\ninfection status",
+       color = "Monkey\ninfection status",
+       shape = "Monkey\ninfection status") +
+  ggtitle("A") +
+  guides(fill = guide_legend(order = 1,
+                             override.aes = list(alpha = 1, size = 5, linewidth = 1)),
+         color = guide_legend(order = 1),
+         shape = guide_legend(order = 1)) +
+  annotate(geom = "text", label = "Cynomolgus\nmacaques",
+           x = 2.32, y = 2, size = 13) +
+  annotate(geom = "text", label = "Squirrel\nmonkeys",
+           x = 5.34, y = 2, size = 13) +
+  scale_y_continuous(limits = c(0,2.2),
+                     breaks = c(0,0.25,0.5,0.75,1),
+                     expand = expansion(add = 0.01)) + 
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_text(size = 30),
+        axis.title.y = element_markdown(size = 38,
+                                        margin = margin(r = 30, t = 440),
+                                        vjust = 0),
+        legend.position = c(1.1,0.27),
+        plot.margin = unit(c(0,10,0,0.35), "cm"),
+        legend.text = element_text(size = 38),
+        legend.title = element_text(size = 38),
+        plot.title = element_text(size = 32))
+
+img_cyno <- magick::image_read("../output/figures/outlines/macaque_outline.png")
+img_squirrel <- magick::image_read("../output/figures/outlines/squirrel_outline.png")
+
+p1 <- ggplot(df, aes(x = as.character(group_agg), y = prop)) +
+  geom_jitter(aes(fill = monkey_status,
+                  color = monkey_status,
+                  shape = monkey_status),
+              size = 6,
+              width = 0.23,
+              alpha = 0.7) +
+  geom_boxplot(alpha = 0, outlier.shape = NA) +
+  scale_fill_manual(values = c("Dengue virus" = "#1c812b",
+                               "Zika virus" = "#253dbe",
+                               "Control" = "#C2c3c9")) +
+  scale_color_manual(values = c("Dengue virus" = "#1c812b",
+                                "Zika virus" = "#253dbe",
+                                "Control" = "#414341")) +
+  scale_shape_manual(values = c("Dengue virus" = 21,
+                                "Zika virus" = 22,
+                                "Control" = 24)) +
+  geom_vline(xintercept = 3.5, alpha = 0.6, linewidth = 1.1, color = "grey") +
+  labs(y = "Proportion of<br>engorged mosquitoes",
+       x = "",
+       fill = "Monkey status",
+       color = "Monkey status",
+       shape = "Monkey status") +
+  guides(fill = guide_legend(order = 1,
+                             override.aes = list(alpha = 1, size = 5)),
+         color = guide_legend(order = 1),
+         shape = guide_legend(order = 1)) +
+  scale_y_continuous(limits = c(-0.1,1.05),
+                     breaks = c(0,0.25,0.5,0.75,1),
+                     expand = expansion(add = 0.01)) + 
+  coord_cartesian(ylim = c(-0.01,1.05)) + # bottom points are not removed when plotting
+  ggtitle("B") +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_text(size = 30),
+        axis.title.y = element_markdown(size = 38,
+                                        margin = margin(r = 30),
+                                        vjust = 0),
+        legend.position = "none",
+        plot.margin = unit(c(0,10,0,0.35), "cm"),
+        legend.text = element_text(size = 38),
+        legend.title = element_text(size = 38),
+        plot.title = element_text(size = 32))
+
+# Change order of boxplots
+df_sub$group_agg <- factor(df_sub$group_agg, levels = c("Cyno.Control",
+                                                "Cyno.Dengue_virus",
+                                                "Cyno.Zika_virus",
+                                                "Squirrel.Control",
+                                                "Squirrel.Dengue_virus",
+                                                "Squirrel.Zika_virus"))
+
+p2 <- ggplot(df_sub, aes(x = as.character(group_agg), y = prop)) +
+  geom_jitter(aes(fill = monkey_status,
+                  color = monkey_status,
+                  shape = monkey_status),
+              size = 6,
+              width = 0.23,
+              alpha = 0.7) +
+  geom_boxplot(alpha = 0, outlier.shape = NA) +
+  scale_fill_manual(values = c("Dengue virus" = "#1c812b",
+                               "Zika virus" = "#253dbe",
+                               "Control" = "#C2c3c9")) +
+  scale_color_manual(values = c("Dengue virus" = "#1c812b",
+                                "Zika virus" = "#253dbe",
+                                "Control" = "#414341")) +
+  scale_shape_manual(values = c("Dengue virus" = 21,
+                                "Zika virus" = 22,
+                                "Control" = 24)) +
+  geom_vline(xintercept = 3.5, alpha = 0.6, linewidth = 1.1, color = "grey") +
+  labs(y = "Proportion of<br>engorged mosquitoes",
+       x = "",
+       fill = "Monkey status",
+       color = "Monkey status",
+       shape = "Monkey status") +
+  guides(fill = guide_legend(order = 1,
+                             override.aes = list(alpha = 1, size = 5)),
+         color = guide_legend(order = 1),
+         shape = guide_legend(order = 1)) +
+  scale_y_continuous(limits = c(-0.1,1.05),
+                     breaks = c(0,0.25,0.5,0.75,1),
+                     expand = expansion(add = 0.01)) + 
+  coord_cartesian(ylim = c(-0.01,1.05)) + # bottom points are not removed when plotting
+  ggtitle("C") +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_text(size = 30),
+        axis.title.y = element_markdown(size = 38,
+                                        margin = margin(r = 30),
+                                        vjust = 0),
+        legend.position = "none",
+        plot.margin = unit(c(0,10,0,0.35), "cm"),
+        legend.text = element_text(size = 38),
+        legend.title = element_text(size = 38),
+        plot.title = element_text(size = 32))
+
+P <- p0 / p1 / p2
+P <- P + plot_layout(heights = c(2,1,1))
+
+p_draw <- ggdraw() + 
+  draw_plot(P) +
+  draw_image(image = img_cyno, 
+             x = 0.15, y = 0.90, scale = 0.1,
+             valign = 0, halign = 0) +
+  draw_image(image = img_squirrel, 
+             x = 0.51, y = 0.90, scale = 0.1,
+             valign = 0, halign = 0)
+
+png(filename = "../output/figures/Figure_3.png",
+    width = 1600, height = 1800)
+print(p_draw)
+dev.off()
+
+```
+
+```{r}
+#| label: complete-model
+#| echo: false
+
+df$species <- df$NHP
+df$virus[df$group == "control"] <- "none"
+df$time_feed <- df$dec - df$day
+
+mod0 <- glmmTMB(nb_fed/total ~ viremia +
+                          virus +
+                          sex +
+                          scale(weight)*species +
+                          scale(time_feed) +
+                          scale(temp_estim_feed)*species +
+                  offset(log(int_duration)),
+                family = binomial(link = "logit"),
+                weights = total,
+                REML = F,
+                data = df)
+MuMIn::AICc(mod0) # 1705.617
+simulateResiduals(mod0, plot = T) # issues
+testDispersion(mod0) # signif
+testZeroInflation(mod0) # signif
+
+mod1 <- glmmTMB(nb_fed/total ~ viremia +
+                          virus +
+                          sex +
+                          scale(weight)*species +
+                          scale(time_feed) +
+                          scale(temp_estim_feed)*species +
+                  offset(log(int_duration)),
+                family = betabinomial(link = "logit"),
+                weights = total,
+                REML = F,
+                data = df)
+MuMIn::AICc(mod1) # 1424.355
+simulateResiduals(mod1, plot = T) # issues (less in QQ plot)
+testDispersion(mod1) # signif
+testZeroInflation(mod1) # no longer signif
+
+anova(mod0,mod1) # signif
+
+mod2 <- glmmTMB(nb_fed/total ~ viremia +
+                          virus +
+                          sex +
+                          scale(weight)*species +
+                          scale(time_feed) +
+                          scale(temp_estim_feed)*species +
+                  offset(log(int_duration)) +
+                  (1|ID) + (1|day),
+                family = binomial(link = "logit"),
+                weights = total,
+                REML = F,
+                data = df)
+MuMIn::AICc(mod2) # 1608.354
+simulateResiduals(mod2, plot = T) # issues
+testDispersion(mod2) # not signif
+testZeroInflation(mod2) # signif
+
+# df <- within(df, species <- relevel(species, ref = "Cyno")) # to check effect of host body temperature in cynos or squirrels
+
+mod3 <- glmmTMB(nb_fed/total ~ viremia +
+                          virus +
+                          sex +
+                          scale(weight)*species +
+                          scale(time_feed) +
+                          scale(temp_estim_feed)*species +
+                  offset(log(int_duration)) +
+                  (1|ID) + (1|day),
+                family = betabinomial(link = "logit"),
+                weights = total,
+                REML = F,
+                data = df)
+MuMIn::AICc(mod3) # 1420.332
+simulateResiduals(mod3, plot = T) # issues
+testDispersion(mod3) # signif
+testZeroInflation(mod3) # not signif
+
+anova(mod0,mod2) # in favour of random effects with binomial
+anova(mod1,mod3) # in favour of random effects with betabinomial
+anova(mod2,mod3) # in favour of betabinomial with random effects
+
+# Predicted difference in engorgement between coldest and hottest squirrel monkey at the time of feeding
+min_T <- min(df[df$species == "Squirrel",]$temp_estim_feed)
+max_T <- max(df[df$species == "Squirrel",]$temp_estim_feed)
+# range 37.82 ; 40.28 / diff 2.46
+
+cold_squirrel <- df[df$species == "Squirrel" & df2$temp_estim_feed == min_T,]
+hot_squirrel <- df[df$species == "Squirrel" & df2$temp_estim_feed == max_T,]
+
+# If you want to see the effect of a specific variable, taking the others at their "typical" value
+# data_to_predict <- datagrid(model = mod3,
+#                             species = rep(c("Squirrel","Cyno"), each = 247),
+#                             temp_estim_feed = rep(seq(37.82,40.28,0.01),2))
+
+data_to_predict <- rbind(cold_squirrel,hot_squirrel)
+pp <- predict(mod3, newdata = data_to_predict, se.fit = TRUE)
+data_to_predict$ci_lwr <- with(pp, plogis(fit + qnorm(0.025)*se.fit))
+data_to_predict$ci_upr <- with(pp, plogis(fit + qnorm(0.975)*se.fit))
+data_to_predict$means <- with(pp, plogis(fit))
+# 0.479 ; 0.755 / 0.276 diff
+
+# saveRDS(mod3, "../output/engorgement_models/host_infection_complete.rds")
+mod3 <- readRDS("../output/engorgement_models/host_infection_complete.rds")
+summary(mod3) 
+# effect of temperature in squirrels:
+# scale(temp_estim_feed)              0.33699    0.14366   2.346   0.0190 *
+# but not in cynos : 
+# scale(temp_estim_feed)                 -0.02141    0.16476  -0.130   0.8966
+
+exp(fixef(mod3)$cond)
+exp(confint(mod3))
+# squirrels : 1.40 [1.06 ; 1.86] for scale(temp_estim_feed)
+# cynos : 0.98 [0.71 ; 1.35]
+car::Anova(mod3, type = "II") 
+# species (0.012) 
+
+car::Anova(mod3, type = "III") # same as summary
+
+plot(allEffects(mod3, partial.residuals = T))
+
+```
+
+```{r}
+#| label: heterogeneity-among-NHP
+#| echo: false
+
+df1 <- read.csv("../data/DENV_Cyno_data_engorgement.csv")
+df1$NHP <- "Cyno"
+df1$virus <- "Dengue-2 virus"
+
+df2 <- read.csv("../data/DENV_Squirrel_data_engorgement.csv")
+df2$NHP <- "Squirrel"
+df2$virus <- "Dengue-2 virus"
+
+df3 <- read.csv("../data/ZIKV_Squirrel_data_engorgement.csv")
+df3$NHP <- "Squirrel"
+df3$virus <- "Zika virus"
+# removing controls as they're already in df2
+df3 <- df3[df3$group != "control",]
+
+df4 <- read.csv("../data/ZIKV_Cyno_data_engorgement.csv")
+df4$NHP <- "Cyno"
+df4$virus <- "Zika virus"
+
+df <- rbind(df1,df2,df3,df4)
+df <- df[df$day != 28,] # REMOVING DAY 28
+q25 <- quantile(df$nb_fed/df$total, probs = 0.25)
+q75 <- quantile(df$nb_fed/df$total, probs = 0.75)
+
+df$monkey_status <- df$virus
+df$monkey_status[which(df$group == "control")] <- "Control"
+
+df$monkey_status <- as.factor(df$monkey_status)
+df <- within(df, monkey_status <- relevel(monkey_status, ref = "Dengue-2 virus"))
+
+df$NHP <- as.factor(df$NHP)
+df <- within(df, NHP <- relevel(NHP, ref = "Squirrel"))
+
+df$group_agg <- interaction(df$NHP,df$monkey_status)
+df$group_agg <- gsub(" ","_",df$group_agg) 
+df$group_agg <- as.factor(df$group_agg)
+
+feed_duration <- str_split(df$feed_duration,":")
+vec_duration <- sapply(feed_duration,"[[",2)
+df$int_duration <- as.integer(vec_duration)
+
+df$ID <- as.factor(df$ID)
+df$ID <- factor(df$ID, levels = Cs(NV259,
+                                   NV289,
+                                   UG171,
+                                   UG253A,
+                                          BC116A,
+                                          BC167,
+                                          BC407,
+                                          CP60,
+                                          FR423A,
+                                          FR469A,
+                                          FR840,
+                                          SB393,
+                                          SB395,
+                                                UGZ626,
+                                                EC944,
+                                                FR1221,
+                                                      5080,
+                                                      5929,
+                                                      6321,
+                                                      6541,4516,
+                                                          4872,
+                                                          5045,
+                                                          5910,
+                                                          6242,
+                                                          6314,
+                                                          6363,
+                                                          6401,
+                                                          6519,
+                                                          6552,4683,
+                                                            4728,
+                                                            4806,
+                                                            5013,
+                                                            5730,
+                                                            6311,
+                                                            6347,
+                                                            6359,
+                                                            6518,
+                                                            6550))
+
+df$monkey_status <- factor(df$monkey_status, levels = c("Control",
+                                                        "Dengue-2 virus",
+                                                        "Zika virus"))
+
+df$vir_TTM <- df$viremia > 0
+df$prop <- df$nb_fed/df$total
+df$prop_time <- df$nb_fed/(df$total * df$int_duration)
+
+# Statistics ----
+# Normalized by duration to be compared with field data (constant duration)
+stat1 <- df %>% group_by(ID) %>% summarise(cv = sd(prop_time)/mean(prop_time)) %>% ungroup()
+summary(stat1$cv)
+ #   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ # 0.2182  0.3401  0.4235  0.4510  0.5554  0.8813
+ 
+# Figures ----
+
+## Normalized by duration (main) ----
+p <- ggplot(df, aes(x = ID, y = prop_time)) +
+  geom_boxplot(aes(fill = monkey_status),
+               varwidth = F,
+               alpha = 0.5,
+               outlier.shape = NA) +
+  geom_jitter(aes(color = vir_TTM,
+                  shape = monkey_status),
+              width = 0.1,
+              size = 2.75, alpha = 0.7) +
+  geom_vline(xintercept = 16.5, linewidth = 1.25, alpha = 0.6) +
+  scale_fill_manual(values = c("Dengue-2 virus" = "#1c812b",
+                                "Zika virus" = "#253dbe",
+                                "Control" = "#C2c3c9")) +
+  scale_color_manual(values = c("TRUE" = "red",
+                               "FALSE" = "black"),
+                     labels = c("TRUE" = "Yes",
+                                "FALSE" = "No")) +
+  scale_shape_manual(values = c("Dengue-2 virus" = 16,
+                                "Zika virus" = 15,
+                                "Control" = 17)) +
+  labs(y = "Proportion of engorged mosquitoes<br>normalized by duration<br>of exposure (min<sup>-1</sup>)",
+       x = "",
+       fill = bquote(bold("Monkey infection status")),
+       shape = bquote(bold("Monkey infection status")),
+       color = bquote(bold("Viremic"))) +
+  guides(fill = guide_legend(override.aes = list(alpha = 0.7), order = 1,
+                             title.position = "left", nrow = 1),
+         colour = guide_legend(order = 2,
+                               title.position = "left", nrow = 1),
+         shape = guide_legend(order = 1,
+                              title.position = "left", nrow = 1)) +
+  annotate(geom = "text", label = "Cynomolgus\nmacaques",
+           x = 9, y = 0.35, size = 8) +
+  annotate(geom = "text", label = "Squirrel\nmonkeys",
+           x = 29.7, y = 0.35, size = 8) +
+  # annotate(geom = "text", label = "A",
+  #          x = 1, y = 0.37, size = 10) + # instead of title or tag because of font
+  scale_y_continuous(limits = c(-0.01,0.37),
+                     breaks = c(0,0.05,0.1,0.15,0.2,0.25,0.3),
+                     expand = expansion(add = 0.01)) + 
+  coord_cartesian(ylim = c(0,0.37)) +
+  theme_cowplot() +
+  # theme_classic() +
+  theme(axis.text.x = element_text(size = 18,
+                                   vjust = 1 ,
+                                   hjust = 1,
+                                   angle = 45),
+        axis.text.y = element_text(size = 22),
+        axis.title.y = element_markdown(size = 22,
+                                    margin = margin(r = 18, t = 140),
+                                    vjust = 0),
+        legend.position = "bottom", #c(0.5,-0.27),
+        legend.justification = "center",
+        legend.box = "vertical",
+        plot.margin = unit(c(0.2,0.5,0.2,0.5), "cm"),
+        legend.text = element_text(size = 24),
+        legend.title = element_text(size = 24),
+        legend.key.height = unit(1.5,"cm"),
+        legend.key.width = unit(1.5,"cm"))
+
+p_draw <- ggdraw() + 
+  draw_image(image = "../output/figures/outlines/macaque_outline.png",
+             x = -0.29, y = 0.43, scale = 0.1) +
+  draw_image(image = "../output/figures/outlines/squirrel_outline.png",
+             x = 0.18, y = 0.43, scale = 0.1) +
+  draw_plot(p)
+# if warning Removes x rows containing missing values -> execute again (because of jitter)
+
+png(filename = "../output/figures/Figure_5.png", width = 1600, height = 750)
+print(p_draw)
+dev.off()
+
+## Raw proportions engorged (suppl) ----
+
+p <- ggplot(df, aes(x = ID, y = prop)) +
+  geom_boxplot(aes(fill = monkey_status),
+               varwidth = F,
+               alpha = 0.5,
+               outlier.shape = NA) +
+  geom_jitter(aes(color = vir_TTM,
+                  shape = monkey_status),
+              width = 0.14,
+              size = 2.75, alpha = 0.7) +
+  geom_vline(xintercept = 16.5, linewidth = 1.25, alpha = 0.6) +
+  scale_fill_manual(values = c("Dengue-2 virus" = "#1c812b",
+                                "Zika virus" = "#253dbe",
+                                "Control" = "#C2c3c9")) +
+  scale_color_manual(values = c("TRUE" = "red",
+                               "FALSE" = "black"),
+                     labels = c("TRUE" = "Yes",
+                                "FALSE" = "No")) +
+  scale_shape_manual(values = c("Dengue-2 virus" = 16,
+                                "Zika virus" = 15,
+                                "Control" = 17)) +
+  labs(y = "Proportion of engorged mosquitoes",
+       x = "",
+       fill = "Monkey infection status",
+       shape = "Monkey infection status",
+       color = "Viremic") +
+  guides(fill = guide_legend(override.aes = list(alpha = 0.7), order = 1,
+                             title.position = "left", nrow = 1),
+         colour = guide_legend(order = 2,
+                               title.position = "left", nrow = 1),
+         shape = guide_legend(order = 1,
+                              title.position = "left", nrow = 1)) +
+  annotate(geom = "text", label = "Cynomolgus\nmacaques",
+           x = 10, y = 1.18, size = 8) +
+  annotate(geom = "text", label = "Squirrel\nmonkeys",
+           x = 30, y = 1.18, size = 8) +
+  annotate(geom = "text", label = "A",
+           x = 1, y = 1.23, size = 10) + # instead of title or tag because of font
+  scale_y_continuous(limits = c(-0.03,1.25),
+                     breaks = c(0,0.25,0.5,0.75,1),
+                     expand = expansion(add = 0.03)) +
+  coord_cartesian(ylim = c(0,1.25)) +
+  theme_cowplot() +
+  # theme_classic() +
+  theme(axis.text.x = element_text(size = 18,
+                                   vjust = 1 ,
+                                   hjust = 1,
+                                   angle = 45),
+        axis.text.y = element_text(size = 22),
+        axis.title.y = element_markdown(size = 22,
+                                    margin = margin(r = 18, t = 110),
+                                    vjust = 0),
+        legend.position = "bottom", #c(0.5,-0.27),
+        legend.justification = "center",
+        legend.box = "vertical",
+        plot.margin = unit(c(0.2,0.5,0.2,0.5), "cm"),
+        legend.text = element_text(size = 24),
+        legend.title = element_text(size = 24),
+        legend.key.height = unit(1.5,"cm"),
+        legend.key.width = unit(1.5,"cm"))
+
+p_draw <- ggdraw() + 
+  draw_image(image = "../output/figures/outlines/macaque_outline.png",
+             x = -0.29, y = 0.43, scale = 0.1) +
+  draw_image(image = "../output/figures/outlines/squirrel_outline.png",
+             x = 0.18, y = 0.43, scale = 0.1) +
+  draw_plot(p)
+# if warning Removes x rows containing missing values -> execute again (because of jitter)
+
+png(filename = "../output/figures/Figure_S2_A.png", width = 1600, height = 750)
+print(p_draw)
+dev.off()
+
+```
+
+

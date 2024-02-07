@@ -1,9 +1,4 @@
 ## ---------------------------
-##
-## Script name:
-##
-## Purpose of script:
-##
 ## Author: Helene Cecilia
 ##
 ## Date Created: 2023-04-05
@@ -58,28 +53,24 @@ hms_to_decimal_day <-function(time_hms){
 }
 
 # Engorgement data after day 0 ----
-zikv_sq_data <- read.csv("../data/ZIKV_Squirrel_data_feeding_behaviour_with_total_correct.csv")
+zikv_sq_data <- read.csv("../data/ZIKV_Squirrel_data_engorgement.csv")
 zikv_sq_data$species <- "Squirrel"
 zikv_sq_data$virus <- "Zika"
 zikv_sq_data$virus[zikv_sq_data$group == "control"] <- "none"
 
-zikv_cy_data <- read.csv("../data/ZIKV_Cyno_data_feeding_behaviour.csv")
+zikv_cy_data <- read.csv("../data/ZIKV_Cyno_data_engorgement.csv")
 zikv_cy_data$species <- "Cyno"
 zikv_cy_data$virus <- "Zika"
-zikv_cy_data$raw_file_inspected <- TRUE
 
-denv_sq_data <- read.csv("../data/DENV_Squirrel_data_feeding_behaviour_with_total_correct.csv")
+denv_sq_data <- read.csv("../data/DENV_Squirrel_data_engorgement.csv")
 denv_sq_data$species <- "Squirrel"
 denv_sq_data$virus <- "Dengue"
 denv_sq_data$virus[denv_sq_data$group == "control"] <- "none"
 
-denv_cy_data <- read.csv("../data/DENV_Cyno_data_feeding_behaviour_with_total_correct.csv")
+denv_cy_data <- read.csv("../data/DENV_Cyno_data_engorgement.csv")
 denv_cy_data$species <- "Cyno"
 denv_cy_data$virus <- "Dengue"
 denv_cy_data$virus[denv_cy_data$group == "control"] <- "none"
-
-denv_sq_data$mosq_type <- NULL
-zikv_sq_data$mosq_type <- NULL
 
 my_data <- rbind(zikv_sq_data, zikv_cy_data, denv_sq_data, denv_cy_data)
 my_data <- unique(my_data)
@@ -95,7 +86,6 @@ my_data <- within(my_data, virus <- relevel(virus, ref = "Dengue"))
 
 my_data$int_duration <- minutes(chron(times. = my_data$feed_duration,
                                       format = "h:m:s"))
-my_data$total <- my_data$total_correct
 eng1 <- my_data # 331 obs
 
 # Temperature data ----
@@ -104,13 +94,13 @@ df2 <- read.csv("../data/Temperatures_Sylvatic_DENV-2_Squirrel_Monkeys.csv")
 df3 <- read.csv("../data/Temperatures_Sylvatic_ZIKV_Squirrel_Monkeys.csv")
 df4 <- read.csv("../data/Temperatures_Sylvatic_ZIKV_Cynomolgus_Macaques.csv")
 
-treat1 <- read.csv("../data/Table_S1_Sylvatic_DENV-2_Cynomolgus_Macaques.csv",
+treat1 <- read.csv("../data/Hanley2024_Table_S1_Sylvatic_DENV-2_Cynomolgus_Macaques.csv",
                    dec = ".", sep  ="\t")
-treat2 <- read.csv("../data/Table_S2_Sylvatic_DENV-2_Squirrel_Monkeys.csv",
+treat2 <- read.csv("../data/Hanley2024_Table_S2_Sylvatic_DENV-2_Squirrel_Monkeys.csv",
                    dec = ".", sep  ="\t")
-treat3 <- read.csv("../data/Table_S4_Sylvatic_ZIKV_Squirrel_Monkeys.csv",
+treat3 <- read.csv("../data/Hanley2024_Table_S4_Sylvatic_ZIKV_Squirrel_Monkeys.csv",
                    dec = ".", sep  ="\t")
-treat4 <- read.csv("../data/Table_S3_Sylvatic_ZIKV_Cynomolgus_Macaques.csv",
+treat4 <- read.csv("../data/Hanley2024_Table_S3_Sylvatic_ZIKV_Cynomolgus_Macaques.csv",
                    dec = ".", sep  ="\t")
 
 treat1 <- unique(treat1[,c("ID","Final.Treatment")])
@@ -148,7 +138,6 @@ df4$Study.Day <- df4$Day + hms_to_decimal_day(df4$chron_time)
 
 # max(c(df1$temp,df2$temp,df3$temp,df4$temp)) # 40.65
 
-# df1 <- df1[df1$Final.Treatment != "1 Mosquito",]
 df1$group <- "control"
 df1$group[df1$Final.Treatment == "1 Mosquito"] <- "infected"
 df1$group[df1$Final.Treatment == "10 Mosquitos"] <- "infected"
@@ -231,40 +220,6 @@ df3_cut$monkey_status <- factor(df3_cut$monkey_status,
 df4_cut$monkey_status <- factor(df4_cut$monkey_status,
                                 levels = c("Zika virus", "Control"))
 
-# Temperature dynamics - days not superposed ------
-# pt1 <- ggplot() + geom_line(data = df1,
-#                                aes(x = Study.Day, y = temp,
-#                                    color = group, group = ID),
-#                                alpha = 0.4) +
-#   geom_point(data = eng1[eng1$species == "Cyno",],
-#              aes(x = dec, y = temp_estim_feed,
-#                  fill = group), alpha = 0.7, shape = 21) +
-#   scale_color_manual(values = c("control" = "darkgrey",
-#                                 "infected" = "darkgreen")) +
-#   scale_fill_manual(values = c("control" = "darkgrey",
-#                                "infected" = "darkgreen"),
-#                     guide = "none") +
-#   geom_vline(xintercept = 0) +
-#   labs(x = "", y = expression("Temperature " ( degree*C)),
-#        color = "") +
-#   coord_cartesian(xlim = c(-7,28), ylim = c(34,41)) +
-#   scale_x_continuous(breaks = c(-7,0,5,10,
-#                                 15,20,25,28),
-#                      labels = c("-7","0","","10",
-#                                 "","20","","28"),
-#                      expand = expansion(add = c(0.01,1))) +
-#   guides(color = guide_legend(override.aes = list(alpha = 1, size = 1.6))) +
-#   theme_bw() +
-#   theme(axis.title.x = element_text(size = 27,
-#                                     margin = margin(t = 15)),
-#         axis.title.y = element_text(size = 27,
-#                                     margin = margin(r = 15)),
-#         axis.text = element_text(size = 25),
-#         legend.text = element_text(size = 26),
-#         panel.grid.minor.x = element_blank(),
-#         legend.position = "bottom")
-# pt1
-
 # Temperature dynamics : days superposed -----
 pd1 <- ggplot() + geom_line(data = df1_cut,
                             aes(x = Study.Day - Day, y = temp,
@@ -316,7 +271,6 @@ pd1 <- ggplot() + geom_line(data = df1_cut,
         legend.position = "top",
         legend.key.width = unit(1, "cm"),
         plot.margin = margin(0,26,0,0))
-#pd1
 
 pd2 <- ggplot() + geom_line(data = df2_cut,
                             aes(x = Study.Day - Day, y = temp,
@@ -367,7 +321,6 @@ pd2 <- ggplot() + geom_line(data = df2_cut,
         legend.position = "top",
         legend.key.width = unit(1, "cm"),
         plot.margin = margin(0,22,0,0))
-# pd2
 
 pd3 <- ggplot() + geom_line(data = df3_cut,
                             aes(x = Study.Day - Day, y = temp,
@@ -419,7 +372,6 @@ pd3 <- ggplot() + geom_line(data = df3_cut,
         legend.position = "bottom",
         legend.key.width = unit(1, "cm"),
         plot.margin = margin(0,22,0,0))
-# pd3
 
 pd4 <- ggplot() + geom_line(data = df4_cut,
                             aes(x = Study.Day - Day, y = temp,
@@ -471,10 +423,9 @@ pd4 <- ggplot() + geom_line(data = df4_cut,
         legend.position = "bottom",
         legend.key.width = unit(1, "cm"),
         plot.margin = margin(0,26,0,0))
-# pd4
 
-img_cyno <- magick::image_read("~/Documents/POSTDOC/Presentations/Images/macaque_outline.png")
-img_squirrel <- magick::image_read("~/Documents/POSTDOC/Presentations/Images/squirrel_outline.png")
+img_cyno <- magick::image_read("../output/figures/outlines/macaque_outline.png")
+img_squirrel <- magick::image_read("../output/figures/outlines/squirrel_outline.png")
 
 p1 <- ggdraw() + 
   draw_plot(pd1) +
@@ -503,7 +454,7 @@ p4 <- ggdraw() +
 
 pd <- (p1|p2)/(p4|p3)
 
-png(filename = "../output/figures/temperature_feeding_time_suppl.png",
+png(filename = "../output/figures/Figure_S1.png",
     width = 1950, height = 1300)
 print(pd)
 dev.off()
@@ -512,9 +463,6 @@ dev.off()
 eng1 <- eng1[eng1$Day != 28,] 
 
 eng1$prop <- eng1$nb_fed/eng1$total
-# summary(eng1$int_duration/max(eng1$int_duration))
-# summary(eng1$int_duration)
-# # 3, 6, 9, 12, 16
 
 ptt1 <- ggplot(eng1[eng1$species == "Cyno" & eng1$virus %in% c("none","Dengue"),]) +
   geom_point(aes(y = prop,
@@ -534,22 +482,16 @@ ptt1 <- ggplot(eng1[eng1$species == "Cyno" & eng1$virus %in% c("none","Dengue"),
   scale_shape_manual(values = c("Dengue-2 virus" = 21,
                                 "Zika virus" = 22,
                                 "Control" = 24)) +
-  # scale_size(limits=c(0,1),
-  #            breaks=c(3,6,9,12,16)/16,
-  #            labels = c("3","6","9","12","16"),
-  #            range = c(0,10)) +
   coord_cartesian(ylim = c(0,1),
                   xlim = c(min(eng1$temp_estim_feed), max(eng1$temp_estim_feed)),
                   clip = "off") + # to allow text outside plot area
   scale_x_continuous(breaks = c(36,37,38,39,40)) +
   labs(x = "",
-       y = "Proportion of fed mosquitoes",
+       y = "Proportion of engorged mosquitoes",
        fill = bquote(bold("Monkey infection status")),
        color = bquote(bold("Monkey infection status")),
        shape = bquote(bold("Monkey infection status"))) +
   ggtitle("A") +
-  # annotate(geom = "text", label = "A",
-  #          x = 36.82, y = 1.23, size = 10) +
   guides(shape = guide_legend(order = 1,
                               override.aes = list(alpha = 1, size = 5)),
          fill = guide_legend(order = 1),
@@ -566,10 +508,8 @@ ptt1 <- ggplot(eng1[eng1$species == "Cyno" & eng1$virus %in% c("none","Dengue"),
         panel.grid.minor.x = element_blank(),
         legend.position = "top",
         legend.box = "vertical",
-        # legend.key.width = unit(1.5, "cm"),
         plot.margin = margin(2,10,0,10),
         plot.title = element_text(size = 27))
-ptt1
 
 ptt2 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Dengue"),]) +
   geom_point(aes(y = prop,
@@ -589,11 +529,6 @@ ptt2 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Dengu
   scale_shape_manual(values = c("Dengue-2 virus" = 21,
                                 "Zika virus" = 22,
                                 "Control" = 24)) +
-  # scale_size(limits=c(0,1),
-  #            breaks=c(3,6,9,12,16)/16,
-  #            labels = c("3","6","9","12","16"),
-  #            range = c(0,10),
-  #            guide = "none") +
   coord_cartesian(ylim = c(0,1),
                   xlim = c(min(eng1$temp_estim_feed), max(eng1$temp_estim_feed))) +
   scale_x_continuous(breaks = c(36,37,38,39,40)) +
@@ -613,10 +548,8 @@ ptt2 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Dengu
         panel.grid.minor.x = element_blank(),
         legend.position = "top",
         legend.box = "vertical",
-        # legend.key.width = unit(1.5, "cm"),
         plot.margin = margin(2,10,0,10),
         plot.title = element_text(size = 27))
-#ptt2
 
 ptt3 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Zika"),]) +
   geom_point(aes(y = prop,
@@ -636,11 +569,6 @@ ptt3 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Zika"
   scale_shape_manual(values = c("Dengue-2 virus" = 21,
                                 "Zika virus" = 22,
                                 "Control" = 24)) +
-  # scale_size(limits=c(0,1),
-  #            breaks=c(3,6,9,12,16)/16,
-  #            labels = c("3","6","9","12","16"),
-  #            range = c(0,10),
-  #            guide = "none") +
   coord_cartesian(ylim = c(0,1),
                   xlim = c(min(eng1$temp_estim_feed), max(eng1$temp_estim_feed))) +
   scale_x_continuous(breaks = c(36,37,38,39,40)) +
@@ -660,10 +588,8 @@ ptt3 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Zika"
         panel.grid.minor.x = element_blank(),
         legend.position = "bottom",
         legend.box = "vertical",
-        # legend.key.width = unit(1.5, "cm"),
         plot.margin = margin(2,10,0,10),
         plot.title = element_text(size = 27))
-#ptt3
 
 ptt4 <- ggplot(eng1[eng1$species == "Cyno" & eng1$virus %in% c("none","Zika"),]) +
   geom_point(aes(y = prop,
@@ -683,16 +609,11 @@ ptt4 <- ggplot(eng1[eng1$species == "Cyno" & eng1$virus %in% c("none","Zika"),])
   scale_shape_manual(values = c("Dengue-2 virus" = 21,
                                 "Zika virus" = 22,
                                 "Control" = 24)) +
-  # scale_size(limits=c(0,1),
-  #            breaks=c(3,6,9,12,16)/16,
-  #            labels = c("3","6","9","12","16"),
-  #            range = c(0,10),
-  #            guide = "none") +
   coord_cartesian(ylim = c(0,1),
                   xlim = c(min(eng1$temp_estim_feed), max(eng1$temp_estim_feed))) +
   scale_x_continuous(breaks = c(36,37,38,39,40)) +
   labs(x = expression("Body temperature " ( degree*C)),
-       y = "Proportion of fed mosquitoes",
+       y = "Proportion of engorged mosquitoes",
        fill = "", color = "", shape = "") +
   ggtitle("C") +
   guides(shape = guide_legend(override.aes = list(alpha = 1, size = 5))) +
@@ -707,13 +628,11 @@ ptt4 <- ggplot(eng1[eng1$species == "Cyno" & eng1$virus %in% c("none","Zika"),])
         panel.grid.minor.x = element_blank(),
         legend.position = "bottom",
         legend.box = "vertical",
-        # legend.key.width = unit(1.5, "cm"),
         plot.margin = margin(2,10,0,10),
         plot.title = element_text(size = 27))
-#ptt4
 
-img_cyno <- magick::image_read("~/Documents/POSTDOC/Presentations/Images/macaque_outline.png")
-img_squirrel <- magick::image_read("~/Documents/POSTDOC/Presentations/Images/squirrel_outline.png")
+img_cyno <- magick::image_read("../output/figures/outlines/macaque_outline.png")
+img_squirrel <- magick::image_read("../output/figures/outlines/squirrel_outline.png")
 
 p1 <- ggdraw() + 
   draw_plot(ptt1) +
@@ -739,268 +658,10 @@ p4 <- ggdraw() +
              x = 0.85, y = 0.22, scale = 0.15,
              valign = 0, halign = 0)
 
-# p <- (p1 | p2)/(p4 | p3)
 p <- (p1/p4)|(p2/p3)
 
-png(filename = "../output/figures/temperature_engorgement.png",
+png(filename = "../output/figures/Figure_4.png",
     width = 1950, height = 1300)
 print(p)
 dev.off()
 
-# Previous plots ----
-## Time of day and engorgement / without day 28 -----
-# eng1 <- eng1[eng1$Day != 28,] # 260 obs
-# 
-# eng1$prop_time <- eng1$nb_fed/(eng1$total * eng1$int_duration)
-
-ptt1 <- ggplot(eng1[eng1$species == "Cyno",]) + geom_point(aes(y = prop_time,
-                                                               x = time_feed,
-                                                               color = monkey_status,
-                                                               fill = monkey_status,
-                                                               shape = monkey_status),
-                                                           size = 2.5,
-                                                           alpha = 0.85) +
-  scale_fill_manual(values = c("Dengue virus" = "#1c812b",
-                               "Zika virus" = "#253dbe",
-                               "Control" = "#C2c3c9")) +
-  scale_color_manual(values = c("Dengue virus" = "#1c812b",
-                                "Zika virus" = "#253dbe",
-                                "Control" = "#414341")) +
-  scale_shape_manual(values = c("Dengue virus" = 21,
-                                "Zika virus" = 22,
-                                "Control" = 24)) +
-  coord_cartesian(ylim = c(0,0.31),
-                  xlim = c(0.33,0.625)) +
-  scale_x_continuous(breaks = c(0.33,0.375,0.4166,0.4583,0.5,5417,0.5833),
-                     labels = c("8AM","","10AM","","12:00","","2PM"),
-                     expand = expansion(add = c(0.01,0.01))) +
-  labs(x = "",
-       y = "Proportion of fed mosquitoes<br>normalized by duration<br>of exposure (min<sup>-1</sup>)",
-       fill = "Monkey status", color = "Monkey status", shape = "Monkey status") +
-  ggtitle("D") +
-  guides(shape = guide_legend(override.aes = list(alpha = 1, size = 3))) +
-  theme_bw() +
-  theme(axis.title.x = element_text(size = 27,
-                                    margin = margin(t = 1)),
-        axis.title.y = element_markdown(size = 27,
-                                        margin = margin(r = 10)),
-        axis.text = element_text(size = 25),
-        legend.title = element_text(size = 26),
-        legend.text = element_text(size = 26),
-        panel.grid.minor.x = element_blank(),
-        legend.position = "bottom",
-        legend.box = "vertical",
-        # legend.key.width = unit(1.5, "cm"),
-        plot.margin = margin(0,10,0,10),
-        plot.title = element_text(size = 23))
-ptt1
-
-ptt2 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Dengue"),]) +
-  geom_point(aes(y = prop_time,
-                 x = time_feed,
-                 color = monkey_status,
-                 fill = monkey_status,
-                 shape = monkey_status),
-             size = 2.5,
-             alpha = 0.85) +
-  scale_fill_manual(values = c("Dengue virus" = "#1c812b",
-                               "Zika virus" = "#253dbe",
-                               "Control" = "#C2c3c9")) +
-  scale_color_manual(values = c("Dengue virus" = "#1c812b",
-                                "Zika virus" = "#253dbe",
-                                "Control" = "#414341")) +
-  scale_shape_manual(values = c("Dengue virus" = 21,
-                                "Zika virus" = 22,
-                                "Control" = 24)) +
-  coord_cartesian(ylim = c(0,0.31),
-                  xlim = c(0.33,0.625)) +
-  scale_x_continuous(breaks = c(0.33,0.375,0.4166,0.4583,0.5,5417,0.5833),
-                     labels = c("8AM","","10AM","","12:00","","2PM"),
-                     expand = expansion(add = c(0.01,0.01))) +
-  labs(x = "Time of day",
-       y = "",
-       fill = "", color = "", shape = "") +
-  ggtitle("E") +
-  guides(shape = guide_legend(override.aes = list(alpha = 1, size = 3))) +
-  theme_bw() +
-  theme(axis.title.x = element_text(size = 27,
-                                    margin = margin(t = 1)),
-        axis.title.y = element_text(size = 27,
-                                    margin = margin(r = 1)),
-        axis.text = element_text(size = 25),
-        legend.title = element_text(size = 26),
-        legend.text = element_text(size = 26),
-        panel.grid.minor.x = element_blank(),
-        legend.position = "bottom",
-        legend.box = "vertical",
-        # legend.key.width = unit(1.5, "cm"),
-        plot.margin = margin(0,10,0,10),
-        plot.title = element_text(size = 23))
-ptt2
-
-ptt3 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Zika"),]) +
-  geom_point(aes(y = prop_time,
-                 x = time_feed,
-                 color = monkey_status,
-                 fill = monkey_status,
-                 shape = monkey_status),
-             size = 2.5,
-             alpha = 0.85) +
-  scale_fill_manual(values = c("Dengue virus" = "#1c812b",
-                               "Zika virus" = "#253dbe",
-                               "Control" = "#C2c3c9")) +
-  scale_color_manual(values = c("Dengue virus" = "#1c812b",
-                                "Zika virus" = "#253dbe",
-                                "Control" = "#414341")) +
-  scale_shape_manual(values = c("Dengue virus" = 21,
-                                "Zika virus" = 22,
-                                "Control" = 24)) +
-  coord_cartesian(ylim = c(0,0.31),
-                  xlim = c(0.33,0.625)) +
-  scale_x_continuous(breaks = c(0.33,0.375,0.4166,0.4583,0.5,5417,0.5833),
-                     labels = c("8AM","","10AM","","12:00","","2PM"),
-                     expand = expansion(add = c(0.01,0.01))) +
-  labs(x = "",
-       y = "",
-       fill = "", color = "", shape = "") +
-  ggtitle("F") +
-  guides(shape = guide_legend(override.aes = list(alpha = 1, size = 3))) +
-  theme_bw() +
-  theme(axis.title.x = element_text(size = 27,
-                                    margin = margin(t = 1)),
-        axis.title.y = element_text(size = 27,
-                                    margin = margin(r = 1)),
-        axis.text = element_text(size = 25),
-        legend.title = element_text(size = 26),
-        legend.text = element_text(size = 26),
-        panel.grid.minor.x = element_blank(),
-        legend.position = "bottom",
-        legend.box = "vertical",
-        # legend.key.width = unit(1.5, "cm"),
-        plot.margin = margin(0,10,0,10),
-        plot.title = element_text(size = 23))
-ptt3
-
-
-img_cyno <- magick::image_read("~/Documents/POSTDOC/Presentations/Images/macaque_outline.png")
-img_squirrel <- magick::image_read("~/Documents/POSTDOC/Presentations/Images/squirrel_outline.png")
-
-p1 <- ggdraw() + 
-  draw_plot(ptt1) +
-  draw_image(image = img_cyno, 
-             x = 0.8, y = 0.75, scale = 0.15,
-             valign = 0, halign = 0)
-
-p2 <- ggdraw() + 
-  draw_plot(ptt2) +
-  draw_image(image = img_squirrel, 
-             x = 0.8, y = 0.75, scale = 0.15,
-             valign = 0, halign = 0)
-
-p3 <- ggdraw() + 
-  draw_plot(ptt3) +
-  draw_image(image = img_squirrel, 
-             x = 0.8, y = 0.75, scale = 0.15,
-             valign = 0, halign = 0)
-
-p <- p1 | p2 | p3
-
-png(filename = "../output/mosq_feeding_behaviour/figures/time_of_day_engorgement.png",
-    width = 1950, height = 560)
-print(p)
-dev.off()
-
-## Temperature and time of mosquito exposure -----
-
-ptt1 <- ggplot(eng1[eng1$species == "Cyno",]) + geom_point(aes(x = time_feed,
-                                                               y = temp_estim_feed,
-                                                               fill = group), #int_duration,
-                                                           shape = 21,
-                                                           size = 2.5,
-                                                           alpha = 0.85) +
-  # scale_color_viridis_c(limits = c(3,16)) +
-  scale_fill_manual(values = c("control" = "darkgrey",
-                               "infected" = "darkgreen")) +
-  coord_cartesian(xlim = c(min(eng1$time_feed), max(eng1$time_feed)),
-                  ylim = c(min(eng1$temp_estim_feed), max(eng1$temp_estim_feed))) +
-  labs(x = "", y = expression("Temperature " ( degree*C)),
-       fill = "") +
-  guides(shape = guide_legend(override.aes = list(alpha = 1, size = 3))) +
-  theme_bw() +
-  theme(axis.title.x = element_text(size = 27,
-                                    margin = margin(t = 1)),
-        axis.title.y = element_text(size = 27,
-                                    margin = margin(r = 1)),
-        axis.text = element_text(size = 25),
-        legend.title = element_text(size = 26),
-        legend.text = element_text(size = 26),
-        panel.grid.minor.x = element_blank(),
-        legend.position = "bottom",
-        legend.box = "vertical",
-        # legend.key.width = unit(1.5, "cm"),
-        plot.margin = margin(0,10,0,10))
-# ptt1
-
-ptt2 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Dengue"),]) +
-  geom_point(aes(x = time_feed,
-                 y = temp_estim_feed,
-                 fill = group), #int_duration,
-             shape = 21,
-             size = 2.5,
-             alpha = 0.85) +
-  # scale_color_viridis_c(limits = c(3,16)) +
-  scale_fill_manual(values = c("control" = "darkgrey",
-                               "infected" = "darkgreen")) +
-  coord_cartesian(xlim = c(min(eng1$time_feed), max(eng1$time_feed)),
-                  ylim = c(min(eng1$temp_estim_feed), max(eng1$temp_estim_feed))) +
-  labs(x = "Time of day", y = "",
-       fill = "") +
-  guides(shape = guide_legend(override.aes = list(alpha = 1, size = 3))) +
-  theme_bw() +
-  theme(axis.title.x = element_text(size = 27,
-                                    margin = margin(t = 1)),
-        axis.title.y = element_text(size = 27,
-                                    margin = margin(r = 1)),
-        axis.text = element_text(size = 25),
-        legend.title = element_text(size = 26),
-        legend.text = element_text(size = 26),
-        panel.grid.minor.x = element_blank(),
-        legend.position = "bottom",
-        legend.box = "vertical",
-        # legend.key.width = unit(1.5, "cm"),
-        plot.margin = margin(0,10,0,10))
-
-ptt3 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Zika"),]) +
-  geom_point(aes(x = time_feed,
-                 y = temp_estim_feed,
-                 fill = group), #int_duration,
-             shape = 21,
-             size = 2.5,
-             alpha = 0.85) +
-  # scale_color_viridis_c(limits = c(3,16)) +
-  scale_fill_manual(values = c("control" = "darkgrey",
-                               "infected" = "#2b8cbe")) +
-  coord_cartesian(xlim = c(min(eng1$time_feed), max(eng1$time_feed)),
-                  ylim = c(min(eng1$temp_estim_feed), max(eng1$temp_estim_feed))) +
-  labs(x = "", y = "",
-       fill = "") +
-  guides(shape = guide_legend(override.aes = list(alpha = 1, size = 3))) +
-  theme_bw() +
-  theme(axis.title.x = element_text(size = 27,
-                                    margin = margin(t = 1)),
-        axis.title.y = element_text(size = 27,
-                                    margin = margin(r = 1)),
-        axis.text = element_text(size = 25),
-        legend.title = element_text(size = 26),
-        legend.text = element_text(size = 26),
-        panel.grid.minor.x = element_blank(),
-        legend.position = "bottom",
-        legend.box = "vertical",
-        # legend.key.width = unit(1.5, "cm"),
-        plot.margin = margin(0,10,0,10))
-p <- ptt1 | ptt2 | ptt3
-p <- p + plot_annotation(tag_levels = "A") & theme(plot.tag = element_text(size = 23))
-png(filename = "../output/mosq_feeding_behaviour/figures/temperature_feeding_time_focus.png",
-    width = 1950, height = 500)
-print(p)
-dev.off()
