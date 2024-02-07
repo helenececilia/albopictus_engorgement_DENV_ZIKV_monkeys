@@ -57,6 +57,8 @@ Files starting with `Temperatures`provide host body temperature from a transpond
 
 Contains figures from the manuscript and the supplementary information, numbered accordingly.
 
+The `outlines` subfolder contains monkey and human images used in figures. The human image was created by Soremba and downloaded from [flaticon.com](https://www.flaticon.com/). The monkey images are licensed from Shutterstock.
+
 #### Engorgement_models subfolder
 
 Contains selected models to describe observed engorgement rates.
