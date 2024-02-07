@@ -1,0 +1,4 @@
+ID,day,nb_fed_day0,group,weight,sex,total,temp_estim_feed,dec,feed_duration,outlier
+EC944,0,11,infected,4600,M,15,38.765,0.466319444444444,00:07:00,NA
+FR1221,0,7,infected,2700,F,15,37.72,0.472916666666667,00:08:00,NA
+UGZ626,0,7,infected,2700,F,15,38.0466666666667,0.480555555555556,00:10:00,NA
