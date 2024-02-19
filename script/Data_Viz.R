@@ -260,13 +260,13 @@ pd1 <- ggplot() + geom_line(data = df1_cut,
                      labels = c("00:00","6AM","12:00","6PM","00:00"),
                      expand = expansion(add = c(0.01,0.01))) +
   theme_bw() +
-  theme(axis.title.x = element_text(size = 29),
-        axis.title.y = element_text(size = 29,
+  theme(axis.title.x = element_text(size = 32),
+        axis.title.y = element_text(size = 32,
                                     margin = margin(r = 15)),
-        axis.text = element_text(size = 27),
-        legend.text = element_text(size = 28),
-        legend.title = element_text(size = 28), 
-        plot.title = element_text(size = 27),
+        axis.text = element_text(size = 29),
+        legend.text = element_text(size = 30),
+        legend.title = element_text(size = 30), 
+        plot.title = element_text(size = 29),
         panel.grid.minor.x = element_blank(),
         legend.position = "top",
         legend.key.width = unit(1, "cm"),
@@ -311,12 +311,12 @@ pd2 <- ggplot() + geom_line(data = df2_cut,
                      labels = c("00:00","6AM","12:00","6PM","00:00"),
                      expand = expansion(add = c(0.01,0.01))) +
   theme_bw() +
-  theme(axis.title.x = element_text(size = 29),
-        axis.title.y = element_text(size = 29,
+  theme(axis.title.x = element_text(size = 32),
+        axis.title.y = element_text(size = 32,
                                     margin = margin(r = 1)),
-        axis.text = element_text(size = 27),
-        legend.text = element_text(size = 28),
-        plot.title = element_text(size = 27),
+        axis.text = element_text(size = 29),
+        legend.text = element_text(size = 30),
+        plot.title = element_text(size = 29),
         panel.grid.minor.x = element_blank(),
         legend.position = "top",
         legend.key.width = unit(1, "cm"),
@@ -361,13 +361,13 @@ pd3 <- ggplot() + geom_line(data = df3_cut,
          fill = guide_legend(override.aes = list(size = 3.5))) +
   ggtitle("D") +
   theme_bw() +
-  theme(axis.title.x = element_text(size = 29,
+  theme(axis.title.x = element_text(size = 32,
                                     margin = margin(t = 15)),
-        axis.title.y = element_text(size = 29,
+        axis.title.y = element_text(size = 32,
                                     margin = margin(r = 1)),
-        axis.text = element_text(size = 27),
-        legend.text = element_text(size = 28),
-        plot.title = element_text(size = 27),
+        axis.text = element_text(size = 29),
+        legend.text = element_text(size = 30),
+        plot.title = element_text(size = 29),
         panel.grid.minor.x = element_blank(),
         legend.position = "bottom",
         legend.key.width = unit(1, "cm"),
@@ -412,13 +412,13 @@ pd4 <- ggplot() + geom_line(data = df4_cut,
          fill = guide_legend(override.aes = list(size = 3.5))) +
   ggtitle("C") +
   theme_bw() +
-  theme(axis.title.x = element_text(size = 29,
+  theme(axis.title.x = element_text(size = 32,
                                     margin = margin(t = 15)),
-        axis.title.y = element_text(size = 29,
+        axis.title.y = element_text(size = 32,
                                     margin = margin(r = 15)),
-        axis.text = element_text(size = 27),
-        legend.text = element_text(size = 28),
-        plot.title = element_text(size = 27),
+        axis.text = element_text(size = 29),
+        legend.text = element_text(size = 30),
+        plot.title = element_text(size = 29),
         panel.grid.minor.x = element_blank(),
         legend.position = "bottom",
         legend.key.width = unit(1, "cm"),
@@ -487,7 +487,7 @@ ptt1 <- ggplot(eng1[eng1$species == "Cyno" & eng1$virus %in% c("none","Dengue"),
                   clip = "off") + # to allow text outside plot area
   scale_x_continuous(breaks = c(36,37,38,39,40)) +
   labs(x = "",
-       y = "Proportion of engorged mosquitoes",
+       y = "Proportion of<br>engorged mosquitoes",
        fill = bquote(bold("Monkey infection status")),
        color = bquote(bold("Monkey infection status")),
        shape = bquote(bold("Monkey infection status"))) +
@@ -498,18 +498,18 @@ ptt1 <- ggplot(eng1[eng1$species == "Cyno" & eng1$virus %in% c("none","Dengue"),
          color = guide_legend(order = 1),
          size = guide_legend(order = 2)) +
   theme_bw() +
-  theme(axis.title.x = element_text(size = 30,
+  theme(axis.title.x = element_text(size = 34,
                                     margin = margin(t = 1)),
-        axis.title.y = element_markdown(size = 30,
+        axis.title.y = element_markdown(size = 34,
                                         margin = margin(r = 15)),
-        axis.text = element_text(size = 28),
-        legend.title = element_text(size = 28),
-        legend.text = element_text(size = 28),
+        axis.text = element_text(size = 30),
+        legend.title = element_text(size = 31),
+        legend.text = element_text(size = 31),
         panel.grid.minor.x = element_blank(),
         legend.position = "top",
         legend.box = "vertical",
         plot.margin = margin(2,10,0,10),
-        plot.title = element_text(size = 27))
+        plot.title = element_text(size = 29))
 
 ptt2 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Dengue"),]) +
   geom_point(aes(y = prop,
@@ -538,18 +538,18 @@ ptt2 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Dengu
   ggtitle("B") +
   guides(shape = guide_legend(override.aes = list(alpha = 1, size = 5))) +
   theme_bw() +
-  theme(axis.title.x = element_text(size = 30,
+  theme(axis.title.x = element_text(size = 34,
                                     margin = margin(t = 1)),
-        axis.title.y = element_text(size = 30,
+        axis.title.y = element_text(size = 34,
                                     margin = margin(r = 1)),
-        axis.text = element_text(size = 28),
-        legend.title = element_text(size = 28),
-        legend.text = element_text(size = 28),
+        axis.text = element_text(size = 30),
+        legend.title = element_text(size = 31),
+        legend.text = element_text(size = 31),
         panel.grid.minor.x = element_blank(),
         legend.position = "top",
         legend.box = "vertical",
         plot.margin = margin(2,10,0,10),
-        plot.title = element_text(size = 27))
+        plot.title = element_text(size = 29))
 
 ptt3 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Zika"),]) +
   geom_point(aes(y = prop,
@@ -578,18 +578,18 @@ ptt3 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Zika"
   ggtitle("D") +
   guides(shape = guide_legend(override.aes = list(alpha = 1, size = 5))) +
   theme_bw() +
-  theme(axis.title.x = element_text(size = 30,
+  theme(axis.title.x = element_text(size = 34,
                                     margin = margin(t = 10)),
-        axis.title.y = element_text(size = 30,
+        axis.title.y = element_text(size = 34,
                                     margin = margin(r = 1)),
-        axis.text = element_text(size = 28),
-        legend.title = element_text(size = 28),
-        legend.text = element_text(size = 28),
+        axis.text = element_text(size = 30),
+        legend.title = element_text(size = 31),
+        legend.text = element_text(size = 31),
         panel.grid.minor.x = element_blank(),
         legend.position = "bottom",
         legend.box = "vertical",
         plot.margin = margin(2,10,0,10),
-        plot.title = element_text(size = 27))
+        plot.title = element_text(size = 29))
 
 ptt4 <- ggplot(eng1[eng1$species == "Cyno" & eng1$virus %in% c("none","Zika"),]) +
   geom_point(aes(y = prop,
@@ -613,23 +613,23 @@ ptt4 <- ggplot(eng1[eng1$species == "Cyno" & eng1$virus %in% c("none","Zika"),])
                   xlim = c(min(eng1$temp_estim_feed), max(eng1$temp_estim_feed))) +
   scale_x_continuous(breaks = c(36,37,38,39,40)) +
   labs(x = expression("Body temperature " ( degree*C)),
-       y = "Proportion of engorged mosquitoes",
+       y = "Proportion of<br>engorged mosquitoes",
        fill = "", color = "", shape = "") +
   ggtitle("C") +
   guides(shape = guide_legend(override.aes = list(alpha = 1, size = 5))) +
   theme_bw() +
-  theme(axis.title.x = element_text(size = 30,
+  theme(axis.title.x = element_text(size = 34,
                                     margin = margin(t = 10)),
-        axis.title.y = element_markdown(size = 30,
+        axis.title.y = element_markdown(size = 34,
                                         margin = margin(r = 15)),
-        axis.text = element_text(size = 28),
-        legend.title = element_text(size = 28),
-        legend.text = element_text(size = 28),
+        axis.text = element_text(size = 30),
+        legend.title = element_text(size = 31),
+        legend.text = element_text(size = 31),
         panel.grid.minor.x = element_blank(),
         legend.position = "bottom",
         legend.box = "vertical",
         plot.margin = margin(2,10,0,10),
-        plot.title = element_text(size = 27))
+        plot.title = element_text(size = 29))
 
 img_cyno <- magick::image_read("../output/figures/outlines/macaque_outline.png")
 img_squirrel <- magick::image_read("../output/figures/outlines/squirrel_outline.png")
@@ -649,13 +649,13 @@ p2 <- ggdraw() +
 p3 <- ggdraw() + 
   draw_plot(ptt3) +
   draw_image(image = img_squirrel, 
-             x = 0.85, y = 0.22, scale = 0.15,
+             x = 0.85, y = 0.24, scale = 0.15,
              valign = 0, halign = 0)
 
 p4 <- ggdraw() + 
   draw_plot(ptt4) +
   draw_image(image = img_cyno, 
-             x = 0.85, y = 0.22, scale = 0.15,
+             x = 0.85, y = 0.24, scale = 0.15,
              valign = 0, halign = 0)
 
 p <- (p1/p4)|(p2/p3)

@@ -702,9 +702,9 @@ p <- ggplot(df, aes(x = ID, y = prop_time)) +
          shape = guide_legend(order = 1,
                               title.position = "left", nrow = 1)) +
   annotate(geom = "text", label = "Cynomolgus\nmacaques",
-           x = 9, y = 0.35, size = 8) +
+           x = 9, y = 0.35, size = 10) +
   annotate(geom = "text", label = "Squirrel\nmonkeys",
-           x = 29.7, y = 0.35, size = 8) +
+           x = 29.7, y = 0.35, size = 10) +
   # annotate(geom = "text", label = "A",
   #          x = 1, y = 0.37, size = 10) + # instead of title or tag because of font
   scale_y_continuous(limits = c(-0.01,0.37),
@@ -713,20 +713,20 @@ p <- ggplot(df, aes(x = ID, y = prop_time)) +
   coord_cartesian(ylim = c(0,0.37)) +
   theme_cowplot() +
   # theme_classic() +
-  theme(axis.text.x = element_text(size = 18,
+  theme(axis.text.x = element_text(size = 22,
                                    vjust = 1 ,
                                    hjust = 1,
                                    angle = 45),
-        axis.text.y = element_text(size = 22),
-        axis.title.y = element_markdown(size = 22,
+        axis.text.y = element_text(size = 28),
+        axis.title.y = element_markdown(size = 30,
                                     margin = margin(r = 18, t = 140),
                                     vjust = 0),
         legend.position = "bottom", #c(0.5,-0.27),
         legend.justification = "center",
         legend.box = "vertical",
         plot.margin = unit(c(0.2,0.5,0.2,0.5), "cm"),
-        legend.text = element_text(size = 24),
-        legend.title = element_text(size = 24),
+        legend.text = element_text(size = 30),
+        legend.title = element_text(size = 30),
         legend.key.height = unit(1.5,"cm"),
         legend.key.width = unit(1.5,"cm"))
 
@@ -776,9 +776,9 @@ p <- ggplot(df, aes(x = ID, y = prop)) +
          shape = guide_legend(order = 1,
                               title.position = "left", nrow = 1)) +
   annotate(geom = "text", label = "Cynomolgus\nmacaques",
-           x = 10, y = 1.18, size = 8) +
+           x = 10, y = 1.18, size = 10) +
   annotate(geom = "text", label = "Squirrel\nmonkeys",
-           x = 30, y = 1.18, size = 8) +
+           x = 30, y = 1.18, size = 10) +
   annotate(geom = "text", label = "A",
            x = 1, y = 1.23, size = 10) + # instead of title or tag because of font
   scale_y_continuous(limits = c(-0.03,1.25),
@@ -787,20 +787,20 @@ p <- ggplot(df, aes(x = ID, y = prop)) +
   coord_cartesian(ylim = c(0,1.25)) +
   theme_cowplot() +
   # theme_classic() +
-  theme(axis.text.x = element_text(size = 18,
+  theme(axis.text.x = element_text(size = 22,
                                    vjust = 1 ,
                                    hjust = 1,
                                    angle = 45),
-        axis.text.y = element_text(size = 22),
-        axis.title.y = element_markdown(size = 22,
+        axis.text.y = element_text(size = 28),
+        axis.title.y = element_markdown(size = 30,
                                     margin = margin(r = 18, t = 110),
                                     vjust = 0),
         legend.position = "bottom", #c(0.5,-0.27),
         legend.justification = "center",
         legend.box = "vertical",
         plot.margin = unit(c(0.2,0.5,0.2,0.5), "cm"),
-        legend.text = element_text(size = 24),
-        legend.title = element_text(size = 24),
+        legend.text = element_text(size = 30),
+        legend.title = element_text(size = 30),
         legend.key.height = unit(1.5,"cm"),
         legend.key.width = unit(1.5,"cm"))
 

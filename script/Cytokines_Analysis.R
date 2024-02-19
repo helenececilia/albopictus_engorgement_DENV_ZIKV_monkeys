@@ -50,24 +50,7 @@ getwd()
 ## -------------------------------
 
 # Data -----
-data <- read.csv("../data/Cytokine_data.csv")
-baseline <- data[data$day == -7,c("ID","cytokine","value")]
-colnames(baseline)[3] <- "baseline"
-data <- merge(data, baseline, by = c("ID","cytokine"))
-
-data$inf_status <- "Control"
-data[data$group != "Control",]$inf_status <- "Infected"
-data$inf_status <- as.factor(data$inf_status)
-data <- within(data, inf_status <- relevel(inf_status, ref = "Infected"))
-data$group <- interaction(data$NHP,data$virus)
-data$group <- as.factor(data$group)
-data <- within(data, group <- relevel(group, ref = "Squirrel.Dengue virus"))
-# data <- data[data$day != 28 & data$day !=-7,]
-
-bites_data <- read.csv("../data/Cumulative_number_of_bites.csv",
-                       sep = ",", dec = ".")
-colnames(bites_data)[3] <- "day"
-my_data <- merge(data,bites_data, by = c("ID","day"))
+my_data <- read.csv("../data/Cytokines_and_bites_data.csv")
 
 # glmmTMB version ----
 pdf(file = "../output/cytokines_analysis/report_repeated_bites_controls_glmmTMB_no_LOD_AICc.pdf")
@@ -585,13 +568,13 @@ p_egf <- ggplot() + geom_line(data = pred_den, aes(x = bites, y = pred_cyto),
   scale_x_continuous(breaks = c(0,2,4,6,8,10),
                      expand = expansion(add = 0.12)) +
   theme_bw() +
-  theme(axis.text = element_text(size = 22),
-        axis.title.y = element_markdown(size = 23,
+  theme(axis.text = element_text(size = 28),
+        axis.title.y = element_markdown(size = 30,
                                         margin = margin(r = 10)),
-        axis.title.x = element_text(size = 23),
+        axis.title.x = element_text(size = 30),
         legend.position = c(0.8,0.33),
-        legend.text = element_text(size = 22),
-        plot.title = element_text(size = 23))
+        legend.text = element_text(size = 28),
+        plot.title = element_text(size = 28))
 
 c <- "MIF" 
 df <- my_data[my_data$cytokine == c,]
@@ -674,13 +657,13 @@ p_mif <- ggplot() + geom_line(data = pred_den, aes(x = bites, y = pred_cyto),
   scale_x_continuous(breaks = c(0,2,4,6,8,10),
                      expand = expansion(add = 0.1)) +
   theme_bw() +
-  theme(axis.text = element_text(size = 22),
-        axis.title.y = element_markdown(size = 23,
+  theme(axis.text = element_text(size = 28),
+        axis.title.y = element_markdown(size = 30,
                                         margin = margin(r = 10)),
-        axis.title.x = element_text(size = 23),
+        axis.title.x = element_text(size = 30),
         legend.position = "none",
-        legend.text = element_text(size = 22),
-        plot.title = element_text(size = 23))
+        legend.text = element_text(size = 28),
+        plot.title = element_text(size = 28))
 
 p_short <- p_egf | p_mif
 
@@ -745,13 +728,13 @@ p_egf <- ggplot() + geom_line(data = pred_den, aes(x = bites, y = pred_cyto),
                      breaks = c(0,5,10,15,20,25,30,35,40,45),
                      expand = expansion(add = 0.12)) +
   theme_bw() +
-  theme(axis.text = element_text(size = 22),
-        axis.title.y = element_markdown(size = 23,
+  theme(axis.text = element_text(size = 28),
+        axis.title.y = element_markdown(size = 30,
                                         margin = margin(r = 10)),
-        axis.title.x = element_text(size = 23),
+        axis.title.x = element_text(size = 30),
         legend.position = "none", #c(0.33,0.25),
-        legend.text = element_text(size = 22),
-        plot.title = element_text(size = 23))
+        legend.text = element_text(size = 28),
+        plot.title = element_text(size = 28))
 
 c <- "MIF" 
 df <- my_data[my_data$cytokine == c,]
@@ -812,13 +795,13 @@ p_mif <- ggplot() + geom_line(data = pred_den, aes(x = bites, y = pred_cyto),
                      breaks = c(0,5,10,15,20,25,30,35,40,45),
                      expand = expansion(add = 0.12)) +
   theme_bw() +
-  theme(axis.text = element_text(size = 22),
-        axis.title.y = element_markdown(size = 23,
+  theme(axis.text = element_text(size = 28),
+        axis.title.y = element_markdown(size = 30,
                                         margin = margin(r = 10)),
-        axis.title.x = element_text(size = 23),
+        axis.title.x = element_text(size = 30),
         legend.position = "none",
-        legend.text = element_text(size = 22),
-        plot.title = element_text(size = 23))
+        legend.text = element_text(size = 28),
+        plot.title = element_text(size = 28))
 
 p_long <- p_egf | p_mif
 
@@ -928,13 +911,13 @@ p_tgf_long <- ggplot() + geom_line(data = pred_den, aes(x = bites, y = pred_cyto
                      breaks = c(0,5,10,15,20,25,30,35,40,45),
                      expand = expansion(add = 0.12)) +
   theme_bw() +
-  theme(axis.text = element_text(size = 22),
-        axis.title.y = element_markdown(size = 23,
+  theme(axis.text = element_text(size = 28),
+        axis.title.y = element_markdown(size = 30,
                                         margin = margin(r = 10)),
-        axis.title.x = element_text(size = 23),
+        axis.title.x = element_text(size = 30),
         legend.position = c(0.75,0.8),
-        legend.text = element_text(size = 22),
-        plot.title = element_text(size = 23))
+        legend.text = element_text(size = 28),
+        plot.title = element_text(size = 28))
 
 c <- "MCP.1" 
 df <- my_data[my_data$cytokine == c,]
@@ -1023,13 +1006,13 @@ p_mcp_long <- ggplot() + geom_line(data = pred_den, aes(x = bites, y = pred_cyto
                      breaks = c(0,5,10,15,20,25,30,35,40,45),
                      expand = expansion(add = 0.12)) +
   theme_bw() +
-  theme(axis.text = element_text(size = 22),
-        axis.title.y = element_markdown(size = 23,
+  theme(axis.text = element_text(size = 28),
+        axis.title.y = element_markdown(size = 30,
                                         margin = margin(r = 10)),
-        axis.title.x = element_text(size = 23),
+        axis.title.x = element_text(size = 30),
         legend.position = "none", #c(0.33,0.25),
-        legend.text = element_text(size = 22),
-        plot.title = element_text(size = 23))
+        legend.text = element_text(size = 28),
+        plot.title = element_text(size = 28))
 
 p_suppl <- p_tgf_long | p_mcp_long
 

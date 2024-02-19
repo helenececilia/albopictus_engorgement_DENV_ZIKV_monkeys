@@ -47,7 +47,7 @@ Files starting with `Hanley2024` correspond to data described in the paper by Ha
 
 Files starting with `Temperatures`provide host body temperature from a transponder every 15 minutes.
 
-`Cytokine_data.csv` contains cytokine concentrations over time, which is used together with `Cumulative_number_of_bites.csv` to test associations with short-term and long-term exposure to mosquito bites.
+`Cytokines_and_bites_data.csv` contains cytokine concentrations over time along with short-term and long-term exposure to mosquito bites.
 
 `Approach_rate_Hernandez_Acosta.csv` contains approach data from Hernandez Acosta, 2023.
 
