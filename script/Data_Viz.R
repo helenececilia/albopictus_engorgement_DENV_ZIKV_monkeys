@@ -508,7 +508,7 @@ ptt1 <- ggplot(eng1[eng1$species == "Cyno" & eng1$virus %in% c("none","Dengue"),
         panel.grid.minor.x = element_blank(),
         legend.position = "top",
         legend.box = "vertical",
-        plot.margin = margin(2,10,0,10),
+        plot.margin = margin(2,5,0,10),
         plot.title = element_text(size = 29))
 
 ptt2 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Dengue"),]) +
@@ -548,7 +548,7 @@ ptt2 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Dengu
         panel.grid.minor.x = element_blank(),
         legend.position = "top",
         legend.box = "vertical",
-        plot.margin = margin(2,10,0,10),
+        plot.margin = margin(2,10,0,5),
         plot.title = element_text(size = 29))
 
 ptt3 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Zika"),]) +
@@ -588,7 +588,7 @@ ptt3 <- ggplot(eng1[eng1$species == "Squirrel" & eng1$virus %in% c("none","Zika"
         panel.grid.minor.x = element_blank(),
         legend.position = "bottom",
         legend.box = "vertical",
-        plot.margin = margin(2,10,0,10),
+        plot.margin = margin(2,5,0,10),
         plot.title = element_text(size = 29))
 
 ptt4 <- ggplot(eng1[eng1$species == "Cyno" & eng1$virus %in% c("none","Zika"),]) +
@@ -628,7 +628,7 @@ ptt4 <- ggplot(eng1[eng1$species == "Cyno" & eng1$virus %in% c("none","Zika"),])
         panel.grid.minor.x = element_blank(),
         legend.position = "bottom",
         legend.box = "vertical",
-        plot.margin = margin(2,10,0,10),
+        plot.margin = margin(2,10,0,5),
         plot.title = element_text(size = 29))
 
 img_cyno <- magick::image_read("../output/figures/outlines/macaque_outline.png")
@@ -660,8 +660,13 @@ p4 <- ggdraw() +
 
 p <- (p1/p4)|(p2/p3)
 
-png(filename = "../output/figures/Figure_4.png",
-    width = 1950, height = 1300)
+# png(filename = "../output/figures/Figure_4.png",
+#     width = 1950, height = 1300)
+# print(p)
+# dev.off()
+
+pdf(file = "../output/figures/Figure_4.pdf",
+    width = 26, height = 17)
 print(p)
 dev.off()
 

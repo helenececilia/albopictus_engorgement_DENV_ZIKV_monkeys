@@ -178,30 +178,34 @@ MuMIn::AICc(m1) # 1410.098 / 1159.334 / 1586.409
 
 anova(m0,m1)  # signif
 
-m2 <- glmmTMB(nb_fed/total ~ group_agg + offset(log(int_duration)) + (1|ID),
+m2 <- glmmTMB(nb_fed/total ~ group_agg + offset(log(int_duration)) + (1|ID) + (1|day),
               data = df,
               family = binomial(link = "logit"),
               weights = total,
               REML = F)
-MuMIn::AICc(m2) # 1656.872 / 1356.373 / 1872.403
+MuMIn::AICc(m2) # 1613.967 / 1308.238 / 1835.888
 
 anova(m0,m2) # signif
 
-m3 <- glmmTMB(nb_fed/total ~ group_agg + offset(log(int_duration)) + (1|ID),
+m3 <- glmmTMB(nb_fed/total ~ group_agg + offset(log(int_duration)) + (1|ID) + (1|day),
               data = df,
               family = betabinomial(link = "logit"),
               weights = total,
               dispformula = ~1 ,
               REML = F)
-MuMIn::AICc(m3)  # 1412.212 / 1161.397 / 1588.468
+MuMIn::AICc(m3)  # 1406.685 / 1155.343 / 1584.689
 
 anova(m2,m3) # signif
-anova(m1,m3) # not signif
+# m1/m3 is the only comparison where it's not obvious which should be selected based on AIC
+anova(m1,m3) # signif / signif / not signif
 
-# saveRDS(m1, "../output/engorgement_models/host_infection_simple.rds")
-m1 <- readRDS("../output/engorgement_models/host_infection_simple.rds")
-# with or without subsetting, m1 retained
-summary(m1)
+# m3 retained without day 28, with and without subsetting
+# m1 retained with day 28 (but results qualitatively similar)
+
+saveRDS(m3, "../output/engorgement_models/host_infection_simple.rds")
+m <- readRDS("../output/engorgement_models/host_infection_simple.rds")
+
+summary(m)
 
 # Note : this is equivalent to a model with formula  ~ NHP*monkey_status
 comp <-  c("Cyno.Dengue_virus - Squirrel.Dengue_virus = 0",
@@ -211,9 +215,9 @@ comp <-  c("Cyno.Dengue_virus - Squirrel.Dengue_virus = 0",
             "Cyno.Zika_virus - Cyno.Control = 0",
             "Squirrel.Dengue_virus - Squirrel.Control = 0",
             "Squirrel.Zika_virus - Squirrel.Control = 0")
-tuk = glht(m1, linfct = mcp(group_agg = comp)) 
+tuk = glht(m, linfct = mcp(group_agg = comp)) 
 
-summary(tuk, test = adjusted("none")) # effect of species : DENV & control + ZIKV/control cyno 
+summary(tuk, test = adjusted("none")) # effect of species : DENV & control + ZIKV/control cyno
 summary(tuk, test = adjusted("fdr")) # same 
 
 res <- tidy(confint(tuk))
@@ -234,17 +238,32 @@ odds_ratios <- exp(fixed_effects)
 
 newDat <- data.frame(group_agg = unique(df$group_agg))
 newDat$int_duration <- median(df$int_duration) # 6 minutes
+# provided for predict to work but won't affect predictions (population level)
+newDat$ID <- df$ID[1]
+newDat$day <- df$day[1]
 newDat$total <- 15
 
-pred <- predict(m1, newdata = newDat, se.fit = T)
+m <- readRDS("../output/engorgement_models/host_infection_simple.rds")
+pred <- predict(m, newdata = newDat, se.fit = T, re.form = NA)
 newDat$pred <- plogis(pred$fit)
 # newDat$pred2 <- exp(pred$fit)/(1+exp(pred$fit)) # strictly equivalent
-# pred2 <- predict(m1, newdata = newDat, se.fit = T, type = "response") # strictly equivalent
+# pred2 <- predict(m, newdata = newDat, se.fit = T, type = "response") # strictly equivalent
 # plogis(pred$fit) # these are probabilities
 # exp(pred$fit) # these are the odds : p/(1-p)
 # from odds you can compute odd ratios
 newDat$lwr <- plogis(pred$fit - 1.96*pred$se.fit)
 newDat$upr <- plogis(pred$fit + 1.96*pred$se.fit)
+
+### Test (with formulation NHP*monkey status)
+# roughly the same results but picked duration different
+# data_to_predict <- datagrid(model = m,
+#                             NHP = rep(c("Squirrel","Cyno"), 3),
+#                             monkey_status = rep(c("Control","Dengue virus","Zika virus"), each = 2))
+# pp <- predict(m, newdata = data_to_predict, se.fit = TRUE, re.form = NA)
+# data_to_predict$ci_lwr <- with(pp, plogis(fit + qnorm(0.025)*se.fit))
+# data_to_predict$ci_upr <- with(pp, plogis(fit + qnorm(0.975)*se.fit))
+# data_to_predict$means <- with(pp, plogis(fit))
+#### end test
 
 newDat$monkey_status <- c("Dengue-2 virus",
                        "Control",
@@ -287,7 +306,7 @@ p0 <- ggplot(newDat, aes(x = as.character(group_agg), y = pred)) +
   geom_bracket(xmin = "Squirrel.Control", xmax = "Squirrel.Zika_virus",
                y.position = 1.22, label = "ns", size = 1.3, label.size = 11) +
   geom_bracket(xmin = "Cyno.Control", xmax = "Cyno.Zika_virus",
-               y.position = 1.22, label = "***", size = 1.3, label.size = 11) +
+               y.position = 1.22, label = "**", size = 1.3, label.size = 11) +
   geom_bracket(xmin = "Squirrel.Control", xmax = "Squirrel.Dengue_virus",
                y.position = 1.08, label = "ns", size = 1.3, label.size = 11) +
   geom_bracket(xmin = "Cyno.Control", xmax = "Cyno.Dengue_virus",
@@ -295,7 +314,7 @@ p0 <- ggplot(newDat, aes(x = as.character(group_agg), y = pred)) +
   geom_bracket(xmin = "Cyno.Control", xmax = "Squirrel.Control",
                y.position = 1.36, label = "**", size = 1.3, label.size = 11) +
   geom_bracket(xmin = "Cyno.Dengue_virus", xmax = "Squirrel.Dengue_virus",
-               y.position = 1.5, label = "****", size = 1.3, label.size = 11) +
+               y.position = 1.5, label = "***", size = 1.3, label.size = 11) +
   geom_bracket(xmin = "Cyno.Zika_virus", xmax = "Squirrel.Zika_virus",
                y.position = 1.64, label = "ns", size = 1.3, label.size = 11) +
   labs(y = "Predicted probability<br>of engorging",
@@ -438,8 +457,13 @@ p_draw <- ggdraw() +
              x = 0.51, y = 0.90, scale = 0.1,
              valign = 0, halign = 0)
 
-png(filename = "../output/figures/Figure_3.png",
-    width = 1600, height = 1800)
+# png(filename = "../output/figures/Figure_3.png",
+#     width = 1600, height = 1800)
+# print(p_draw)
+# dev.off()
+
+pdf(file = "../output/figures/Figure_3.pdf",
+    width = 21, height = 24)
 print(p_draw)
 dev.off()
 
@@ -449,12 +473,25 @@ dev.off()
 #| label: complete-model
 #| echo: false
 
+# retained simple model (with NHP*monkey_status formulation) to be compared with complete model
+m_ <- glmmTMB(nb_fed/total ~ NHP*monkey_status + offset(log(int_duration)) + (1|ID) + (1|day),
+              data = df,
+              family = betabinomial(link = "logit"),
+              weights = total,
+              dispformula = ~1 ,
+              REML = F)
+
 df$species <- df$NHP
 df$virus[df$group == "control"] <- "none"
 df$time_feed <- df$dec - df$day
 
+# test substracting mean room temperature
+# df$old_temp <- df$temp_estim_feed # to check it worked properly
+# df$temp_estim_feed[df$species == "Squirrel"] <- df$old_temp[df$species == "Squirrel"] - 27
+# df$temp_estim_feed[df$species == "Cyno"] <- df$old_temp[df$species == "Cyno"] - 25
+
 mod0 <- glmmTMB(nb_fed/total ~ viremia +
-                          virus +
+                          species*virus +
                           sex +
                           scale(weight)*species +
                           scale(time_feed) +
@@ -464,13 +501,13 @@ mod0 <- glmmTMB(nb_fed/total ~ viremia +
                 weights = total,
                 REML = F,
                 data = df)
-MuMIn::AICc(mod0) # 1705.617
+MuMIn::AICc(mod0) # 1665.247 
 simulateResiduals(mod0, plot = T) # issues
-testDispersion(mod0) # signif
-testZeroInflation(mod0) # signif
+testDispersion(mod0) # signif 
+testZeroInflation(mod0) # signif 
 
 mod1 <- glmmTMB(nb_fed/total ~ viremia +
-                          virus +
+                          virus*species +
                           sex +
                           scale(weight)*species +
                           scale(time_feed) +
@@ -480,15 +517,15 @@ mod1 <- glmmTMB(nb_fed/total ~ viremia +
                 weights = total,
                 REML = F,
                 data = df)
-MuMIn::AICc(mod1) # 1424.355
-simulateResiduals(mod1, plot = T) # issues (less in QQ plot)
-testDispersion(mod1) # signif
-testZeroInflation(mod1) # no longer signif
+MuMIn::AICc(mod1) # 1413.127 
+simulateResiduals(mod1, plot = T) # issues (no more in QQ plot)
+testDispersion(mod1) # not signif 
+testZeroInflation(mod1) # no longer signif 
 
-anova(mod0,mod1) # signif
+anova(mod0,mod1) # signif 
 
 mod2 <- glmmTMB(nb_fed/total ~ viremia +
-                          virus +
+                          species*virus +
                           sex +
                           scale(weight)*species +
                           scale(time_feed) +
@@ -499,15 +536,19 @@ mod2 <- glmmTMB(nb_fed/total ~ viremia +
                 weights = total,
                 REML = F,
                 data = df)
-MuMIn::AICc(mod2) # 1608.354
+MuMIn::AICc(mod2) # 1599.986 
 simulateResiduals(mod2, plot = T) # issues
-testDispersion(mod2) # not signif
-testZeroInflation(mod2) # signif
+testDispersion(mod2) #  signif 
+testZeroInflation(mod2) # signif 
 
 # df <- within(df, species <- relevel(species, ref = "Cyno")) # to check effect of host body temperature in cynos or squirrels
+df$sex <- as.factor(df$sex)
+df$virus <- as.factor(df$virus)
+df <- within(df, sex <- relevel(sex, ref = "M"))
+df <- within(df, virus <- relevel(virus, ref = "Dengue virus"))
 
 mod3 <- glmmTMB(nb_fed/total ~ viremia +
-                          virus +
+                          species*virus +
                           sex +
                           scale(weight)*species +
                           scale(time_feed) +
@@ -518,42 +559,47 @@ mod3 <- glmmTMB(nb_fed/total ~ viremia +
                 weights = total,
                 REML = F,
                 data = df)
-MuMIn::AICc(mod3) # 1420.332
+MuMIn::AICc(mod3) # 1411.232 
 simulateResiduals(mod3, plot = T) # issues
-testDispersion(mod3) # signif
+testDispersion(mod3) # signif 
 testZeroInflation(mod3) # not signif
 
 anova(mod0,mod2) # in favour of random effects with binomial
 anova(mod1,mod3) # in favour of random effects with betabinomial
 anova(mod2,mod3) # in favour of betabinomial with random effects
 
+anova(m_,mod3) # 0.1481 : not in favour of complete model
+
 # Predicted difference in engorgement between coldest and hottest squirrel monkey at the time of feeding
 min_T <- min(df[df$species == "Squirrel",]$temp_estim_feed)
 max_T <- max(df[df$species == "Squirrel",]$temp_estim_feed)
 # range 37.82 ; 40.28 / diff 2.46
 
-cold_squirrel <- df[df$species == "Squirrel" & df2$temp_estim_feed == min_T,]
-hot_squirrel <- df[df$species == "Squirrel" & df2$temp_estim_feed == max_T,]
+cold_squirrel <- df[df$species == "Squirrel" & df$temp_estim_feed == min_T,]
+hot_squirrel <- df[df$species == "Squirrel" & df$temp_estim_feed == max_T,]
 
 # If you want to see the effect of a specific variable, taking the others at their "typical" value
 # data_to_predict <- datagrid(model = mod3,
-#                             species = rep(c("Squirrel","Cyno"), each = 247),
-#                             temp_estim_feed = rep(seq(37.82,40.28,0.01),2))
-
+#                             species = rep(c("Squirrel","Cyno"), 3),
+#                             virus = rep(c("none","Dengue virus","Zika virus"), each = 2))
+# data_to_predict$int_duration <- median(df$int_duration) # to be consistent with simple model (median)
 data_to_predict <- rbind(cold_squirrel,hot_squirrel)
-pp <- predict(mod3, newdata = data_to_predict, se.fit = TRUE)
+pp <- predict(mod3, newdata = data_to_predict, se.fit = TRUE, re.form = NULL) # include random effect
 data_to_predict$ci_lwr <- with(pp, plogis(fit + qnorm(0.025)*se.fit))
 data_to_predict$ci_upr <- with(pp, plogis(fit + qnorm(0.975)*se.fit))
 data_to_predict$means <- with(pp, plogis(fit))
-# 0.479 ; 0.755 / 0.276 diff
+# 0.532 ; 0.740 / 0.207 diff
 
 # saveRDS(mod3, "../output/engorgement_models/host_infection_complete.rds")
-mod3 <- readRDS("../output/engorgement_models/host_infection_complete.rds")
-summary(mod3) 
+M <- readRDS("../output/engorgement_models/host_infection_complete.rds")
+summary(M) 
+
 # effect of temperature in squirrels:
-# scale(temp_estim_feed)              0.33699    0.14366   2.346   0.0190 *
+# scale(temp_estim_feed)              0.376345   0.137155   2.744 0.006071 **
 # but not in cynos : 
-# scale(temp_estim_feed)                 -0.02141    0.16476  -0.130   0.8966
+# scale(temp_estim_feed)                 -0.089996   0.168445  -0.534 0.593152
+
+
 
 exp(fixef(mod3)$cond)
 exp(confint(mod3))
@@ -738,7 +784,11 @@ p_draw <- ggdraw() +
   draw_plot(p)
 # if warning Removes x rows containing missing values -> execute again (because of jitter)
 
-png(filename = "../output/figures/Figure_5.png", width = 1600, height = 750)
+# png(filename = "../output/figures/Figure_5.png", width = 1600, height = 750)
+# print(p_draw)
+# dev.off()
+
+pdf(file = "../output/figures/Figure_5.pdf", width = 21, height = 10)
 print(p_draw)
 dev.off()
 

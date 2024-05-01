@@ -57,8 +57,10 @@ denv_cy$virus_label <- denv_cy$virus_true
 denv_sq <- read.csv("../data/Day0_DENV_Squirrel_data_engorgement.csv")
 denv_sq$species <- "Squirrel"
 # two categories : "virus_true" used to quantify virus effect 
-# (co-feeding mosq should not be aggregated with infected mosq for a same virus)
-# "virus_label" used for labeling the groups : co-feeding associated with a virus to differenciate
+# (concurrent feeding mosquitoes should not 
+# be aggregated with infected mosquitoes for a same virus)
+# "virus_label" used for labeling the groups : 
+# concurrent feeding associated with a virus to differenciate
 denv_sq$virus_true <- ifelse(denv_sq$mosq_type == "infecting","Dengue virus","")
 denv_sq$virus_label <- ifelse(denv_sq$mosq_type == "control","","Dengue virus")
 
@@ -117,7 +119,7 @@ test$group_agg <- interaction(df_virus$species,df_virus$virus_true)
 test$group_agg <- gsub(" ","_",test$group_agg) # no space for posthoc test to work
 
 test <- test[,c("ID","nb_fed_day0","total","virus_true","species","group_agg","int_duration")]
-# Add the unique co-feeding batch on cynos
+# Add the unique concurrent feeding batch on cynos
 test <- rbind(test,list("FR423A",45,50,"","Cyno","Cyno.",NA)) # we don't know the duration for this feeding 
 # note : list() instead of c() avoids numbers being converted to characters
 test$group_agg <- as.factor(test$group_agg)
@@ -128,7 +130,7 @@ test$virus_true[test$virus_true == ""] <- "Control"
 test$virus_true <- as.factor(test$virus_true)
 test <- test[!is.na(test$int_duration),]
 
-# Simple model with duration incorporated as offset (control and coinf together) ----
+# Simple model with duration incorporated as offset (control and concurrent feeding together) ----
 
 # These three formulations are strictly equivalent
 # m0 <- glmmTMB(nb_fed_day0/total ~ virus_true*species + offset(log(int_duration)),
@@ -174,14 +176,14 @@ MuMIn::AICc(m3) # 286.9377
 anova(m2,m3) # signif
 anova(m1,m3) # not signif
 
-# saveRDS(m1, "../output/engorgement_models/vector_infection.rds")
-m1 <- readRDS("../output/engorgement_models/vector_infection.rds")
+# saveRDS(m1, "../output/engorgement_models/vector_exposition.rds")
+m1 <- readRDS("../output/engorgement_models/vector_exposition.rds")
 summary(m1)
 
 comp <- c("Cyno.Zika_virus - Cyno. = 0",
           "Squirrel.Zika_virus - Squirrel. = 0",
           "Squirrel.Dengue_virus - Squirrel. = 0",
-          "Cyno. - Cyno.Dengue_virus = 0",
+          "Cyno.Dengue_virus - Cyno. = 0",
           "Cyno. - Squirrel. = 0",
           "Cyno.Dengue_virus - Squirrel.Dengue_virus = 0",
           "Cyno.Zika_virus - Squirrel.Zika_virus = 0")
@@ -256,9 +258,9 @@ p0 <- ggplot(newDat, aes(x = as.character(group_agg), y = pred)) +
                y.position = 1.64, label = "ns", size = 1.3, label.size = 11) +
   labs(y = "Predicted probability<br>of engorging",
        x = "",
-       fill = "Mosquito\ninfection status",
-       color = "Mosquito\ninfection status",
-       shape = "Mosquito\ninfection status") +
+       fill = "Mosquito\nexposition status",
+       color = "Mosquito\nexposition status",
+       shape = "Mosquito\nexposition status") +
   ggtitle("A") +
   guides(fill = guide_legend(order = 1,
                              override.aes = list(alpha = 1, size = 5, linewidth = 1)),
@@ -342,8 +344,13 @@ p_draw <- ggdraw() +
              x = 0.51, y = 0.87, scale = 0.1,
              valign = 0, halign = 0)
 
-png(filename = "../output/figures/Figure_2.png",
-    width = 1600, height = 1600)
+# png(filename = "../output/figures/Figure_2.png",
+#     width = 1600, height = 1600)
+# print(p_draw)
+# dev.off()
+
+pdf(file = "../output/figures/Figure_2.pdf",
+    width = 21, height = 21)
 print(p_draw)
 dev.off()
 
