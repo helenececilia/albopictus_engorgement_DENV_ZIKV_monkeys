@@ -49,6 +49,8 @@ Files starting with `Temperatures`provide host body temperature from a transpond
 
 `Cytokines_and_bites_data.csv` contains cytokine concentrations over time along with short-term and long-term exposure to mosquito bites.
 
+`Control_monkeys_cumulative_bites.csv` contains various variables related to bite exposure over time (those used in the analysis as well as other cumulative metrics). It includes days 11, 14, and 21, as mosquito exposure took place on those days, even though cytokine concentrations were not measured.
+
 `Approach_rate_Hernandez_Acosta.csv` contains approach data from Hernandez Acosta, 2023.
 
 ### Output folder
