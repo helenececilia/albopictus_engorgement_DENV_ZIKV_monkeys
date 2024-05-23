@@ -74,4 +74,4 @@ Any questions about this code base can be directed at [helene.cecilia3\@gmail.co
 ### References 
 Hernandez Acosta, E. *Some like it hot : How urban microclimate across a tropical city impacts the capacity of Aedes mosquitoes to transmit flaviviruses*. PhD thesis (New Mexico State University, **2023**).
 
-Hanley KA, Cecilia H, Azar SR, Moehn B, Gass J, Oliveira da Silva NI, Yu W, Yun R, Althouse BM, Vasilakis N, Rossi SL. **2024** Trade-offs shaping transmission of sylvatic dengue and Zika viruses in native and novel monkey hosts. *bioRxiv* 10.1101/2023.06.30.547187 now accepted in *Nature Communications*
+Hanley KA, Cecilia H, Azar SR, Moehn BA, Gass JT, Oliveira da Silva NI, Yu W, Yun R, Althouse BM, Vasilakis N, Rossi SL. **2024** Trade-offs shaping transmission of sylvatic dengue and Zika viruses in monkey hosts. *Nature Communications* 15:2682 10.1038/s41467-024-46810-x 
