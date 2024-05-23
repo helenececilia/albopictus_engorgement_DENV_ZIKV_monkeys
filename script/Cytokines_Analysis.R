@@ -52,6 +52,170 @@ getwd()
 # Data -----
 my_data <- read.csv("../data/Cytokines_and_bites_data.csv")
 
+cyto1 <- my_data[my_data$cytokine == "EGF" & my_data$NHP == "Cyno",]
+cyto2 <- my_data[my_data$cytokine == "MIF" & my_data$NHP == "Cyno",]
+cyto3 <- my_data[my_data$cytokine == "TGFbeta" & my_data$NHP == "Cyno",]
+cyto4 <- my_data[my_data$cytokine == "MCP.1" & my_data$NHP == "Cyno",]
+
+d_cyno <- cyto4
+d_cyno$ID <- as.factor(d_cyno$ID)
+
+m_inf <- gam(log10(value) ~ s(bites_of_yesterday, k = 4) + s(cumul_bites_7_previous_days, k = 4) +
+               s(ID, bs = "re", k = 2),
+             data = d_cyno,
+             method = "ML")
+
+newDat <- data.frame(bites_of_yesterday = d_cyno$bites_of_yesterday,
+                     cumul_bites_7_previous_days = d_cyno$cumul_bites_7_previous_days,
+                     ID = d_cyno$ID)
+pred_nl <- predict(m_inf, type = "response", newdata = newDat)
+# equivalent
+# pred_nl2 <- predict_gamm(m_inf, newdata = newDat, re_form = NULL)
+newDat$pred_cyto <- pred_nl
+newDat$true <- log10(d_cyno$value)
+newDat$day <- d_cyno$day
+
+# Data plot ----
+bites_only <- read.csv("../data/Control_monkeys_cumulative_bites.csv")
+bites_only <- bites_only[bites_only$species == "Cyno",]
+bites_no_cyto <- bites_only[bites_only$day %in% c(11,14,21),]
+p1 <- ggplot(bites_only) + geom_line(aes(x = day,
+                                     y = bites_of_yesterday,
+                                     group = ID)) +
+  geom_point(aes(x = day,
+                y = bites_of_yesterday,
+                color = ID),
+             alpha = 0.75, size = 6) +
+  geom_point(data = bites_no_cyto,
+             aes(x = day,
+                 y = bites_of_yesterday,
+                 fill = ID),
+             shape = 21,
+             alpha = 0.75, size = 6) +
+  facet_wrap(.~ID, nrow = 1) +
+  scale_x_continuous(breaks = c(-7,seq(0,7),28),
+                     labels = c("-7","0",rep("",6),"7","28")) +
+  scale_y_continuous(breaks = c(0,2,4,6,8,10)) +
+  theme_classic() +
+  ggtitle("A") +
+  labs(x = "",
+       y = "Number of bites<br>in the short-term") +
+  theme(legend.position = "none",
+        text = element_text(size = 30),
+        plot.title = element_text(size = 27),
+        axis.title.y = element_markdown())
+
+p2 <- ggplot(bites_only) + geom_line(aes(x = day,
+                                     y = cumul_bites_7_previous_days,
+                                     group = ID)) +
+  geom_point(aes(x = day,
+                y = cumul_bites_7_previous_days,
+                color = ID),
+             alpha = 0.75, size = 6) +
+  geom_point(data = bites_no_cyto,
+             aes(x = day,
+                 y = cumul_bites_7_previous_days,
+                 fill = ID),
+             shape = 21,
+             alpha = 0.75, size = 6) +
+  scale_x_continuous(breaks = c(-7,seq(0,7),28),
+                     labels = c("-7","0",rep("",6),"7","28")) +
+  facet_wrap(.~ID, nrow = 1) +
+  ggtitle("B") +
+  theme_classic() +
+  labs(x = "Day post infection",
+       y = "Number of bites<br>in the long-term") +
+  theme(legend.position = "none",
+        text = element_text(size = 30),
+        plot.title = element_text(size = 27),
+        axis.title.y = element_markdown())
+
+png(filename = "../output/figures/Figure_S3.png",
+    width = 1266, height = 800)
+plot(p1 / p2)
+dev.off()
+
+# Model fit plot ----
+p3 <- ggplot(newDat) +
+  geom_line(aes(x = day,y = pred_cyto,
+                color = ID,
+                group = ID)) +
+  geom_point(aes(x = day,
+                 y = true,
+                 color = ID),
+             alpha = 0.75, size = 6) +
+  facet_wrap(.~ID, ncol = 1) +
+  # ggtitle("A") +
+  scale_x_continuous(breaks = c(-7,seq(0,7),28),
+                     labels = c("-7","0",rep("",6),"7","28")) +
+  theme_classic() +
+  labs(x = "Day post infection",
+       y = "Cytokine concentration (log<sub>10</sub> pg/\u03BCl)") +
+  theme(legend.position = "none",
+        text = element_text(size = 30),
+        plot.title = element_text(size = 27),
+        axis.title.x = element_markdown(),
+        axis.title.y = element_markdown())
+
+p4 <- ggplot() +
+  geom_line(data = newDat,
+            aes(x = bites_of_yesterday, y = pred_cyto,
+                group = ID, color = ID)) +
+  geom_point(data = d_cyno,
+             aes(x = bites_of_yesterday, y = log10(value),
+                 color = ID),
+             alpha = 0.75, size = 6) +
+  scale_x_continuous(breaks = c(0,2,4,6,8,10)) +
+  facet_wrap(.~ID, ncol = 1) +
+  # ggtitle("B") +
+  theme_classic() +
+  labs(x = "Number of bites<br>in the short-term",
+       y = "")+
+  theme(legend.position = "none",
+        text = element_text(size = 30),
+        plot.title = element_text(size = 27),
+        axis.title.x = element_markdown())
+
+p5 <- ggplot() +
+  geom_line(data = newDat,
+            aes(x = cumul_bites_7_previous_days, y = pred_cyto,
+                group = ID, color = ID)) +
+  geom_point(data = d_cyno,
+             aes(x = cumul_bites_7_previous_days, y = log10(value),
+                 color = ID),
+             alpha = 0.75, size = 6) +
+  facet_wrap(.~ID, ncol = 1) +
+  # ggtitle("C") +
+  theme_classic() +
+  labs(x = "Number of bites<br>in the long-term",
+       y = "")+
+  theme(legend.position = "none",
+        text = element_text(size = 30),
+        plot.title = element_text(size = 27),
+        axis.title.x = element_markdown())
+
+p <- (p3 | p4 | p5) + plot_annotation(tag_levels = "A") & 
+  theme(plot.tag = element_text(size = 25))
+
+png(filename = "../output/figures/Figure_S4.png",
+    width = 1900, height = 1000) # cyto1
+# png(filename = "../output/figures/Figure_S5.png",
+#     width = 1900, height = 1000) # cyto2
+plot(p)
+dev.off()
+
+# for supplementary cyto (effect long term only)
+p <- (p3 | p5) + plot_annotation(tag_levels = "A") & 
+  theme(plot.tag = element_text(size = 25))
+
+png(filename = "../output/figures/Figure_S7.png",
+    width = 1266, height = 1000) # cyto3
+# png(filename = "../output/figures/Figure_S8.png",
+#     width = 1266, height = 1000) # cyto 4
+plot(p)
+dev.off()
+
+
 # glmmTMB version ----
 pdf(file = "../output/cytokines_analysis/report_repeated_bites_controls_glmmTMB_no_LOD_AICc.pdf")
 for(c in unique(data$cytokine)){
@@ -481,15 +645,17 @@ dev.off()
 # Cyno : TGF beta & MCP.1 : long term 
 
 # Gam models with significant effects ----
+pal <- c("NV259" = "#c52415",
+         "NV289" = "#7112ac",
+         "UG171" = "#7b5c0d",
+         "UG253A" = "#f6b81a")
+
 ## Short term ----
 c <- "EGF" 
 df <- my_data[my_data$cytokine == c,]
 d_cyno <- df[df$value != df$LOD & df$NHP == "Cyno",]
 d_cyno$ID <- as.factor(d_cyno$ID)
-pal <- c("NV259" = "#c52415",
-         "NV289" = "#7112ac",
-         "UG171" = "#7b5c0d",
-         "UG253A" = "#f6b81a")
+
 m_inf <- gam(log10(value) ~ bites_of_yesterday +
                cumul_bites_7_previous_days +
                s(ID, bs = "re", k = 2),
@@ -574,7 +740,8 @@ p_egf <- ggplot() + geom_line(data = pred_den, aes(x = bites, y = pred_cyto),
         axis.title.x = element_text(size = 30),
         legend.position = c(0.8,0.33),
         legend.text = element_text(size = 28),
-        plot.title = element_text(size = 28))
+        plot.title = element_text(size = 28),
+        plot.margin = margin(r = 10))
 
 c <- "MIF" 
 df <- my_data[my_data$cytokine == c,]
@@ -734,7 +901,8 @@ p_egf <- ggplot() + geom_line(data = pred_den, aes(x = bites, y = pred_cyto),
         axis.title.x = element_text(size = 30),
         legend.position = "none", #c(0.33,0.25),
         legend.text = element_text(size = 28),
-        plot.title = element_text(size = 28))
+        plot.title = element_text(size = 28),
+        plot.margin = margin(r = 10))
 
 c <- "MIF" 
 df <- my_data[my_data$cytokine == c,]
@@ -818,7 +986,12 @@ p_draw <- ggdraw(p) +
   draw_image(image = "../output/figures/outlines/macaque_outline.png",
              x = 0.08, y = -0.1, scale = 0.07) 
 
-png(filename = "../output/figures/Figure_6.png", width = 1600, height = 1000)
+# png(filename = "../output/figures/Figure_6.png", width = 1600, height = 1000)
+# print(p_draw)
+# dev.off()
+
+cairo_pdf(filename = "../output/figures/Figure_6.pdf",
+          width = 21, height = 13)
 print(p_draw)
 dev.off()
 
