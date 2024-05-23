@@ -27,17 +27,17 @@ The analyses were all performed on a desktop computer (Ubuntu 22.04)
 
 *Note : some scripts are in the quarto format (.qmd), which is similar to R Markdown (see [quarto.org](https://quarto.org/)). It is for long scripts that benefit from being executed in chunks, but the programming language used is still R.*
 
--   `Data_Viz.R` produces **Figures 4 and S.1**, related to host body temperature, engorgement, and time of day. 
+-   `Data_Viz.R` produces **Figures 4 and S1**, related to host body temperature, engorgement, and time of day. 
 
 -   `Day0_Engorgement_Vector_Infection_Status.R` tests the effect of vector infection status on engorgement rates. This script produces **Figure 2**. The selected model is saved in `output/engorgement_models/vector_infection.rds`. 
 
--   `Engorgement_Host_Infection_Status.qmd` tests the effect of host infection status (what we call the simple model) and other biological and experimental variables (what we call the complete model) on engorgement rates. It produces **Figures 3, 5, and S.2A**. Model objects are saved in `output/engorgement_models/host_infection_simple.rds` and `output/engorgement_models/host_infection_complete.rds`. 
+-   `Engorgement_Host_Infection_Status.qmd` tests the effect of host infection status (what we call the simple model) and other biological and experimental variables (what we call the complete model) on engorgement rates. It produces **Figures 3, 5, and S2A**. Model objects are saved in `output/engorgement_models/host_infection_simple.rds` and `output/engorgement_models/host_infection_complete.rds`. 
 
 -   `Preliminary_Tests.R` performs tests that justify the exclusion of data from day 28 of the experiments, as well as interaction terms in the complete model. 
 
--   `Approach_Data_Manaus.R` uses data from a field study in Manaus, Brazil, measuring approach rates of mosquitoes on different occasions, with different collectors, and different levels of urbanization and times of day (Hernandez Acosta, 2023). It computes the coefficient of variation in what we define as optimum conditions. It produces **Figure S.2B**. 
+-   `Approach_Data_Manaus.R` uses data from a field study in Manaus, Brazil, measuring approach rates of mosquitoes on different occasions, with different collectors, and different levels of urbanization and times of day (Hernandez Acosta, 2023). It computes the coefficient of variation in what we define as optimum conditions. It produces **Figure S2B**. 
 
--   `Cytokines_Analysis.R` runs generalized linear mixed effect models, as well as generalized additive models, and performs a selection, to describe the possible associations between cytokine concentrations in control monkeys, and the short-term and long-term exposure to uninfected mosquito bites. It produces **Figures 6 and S.3**.
+-   `Cytokines_Analysis.R` runs generalized linear mixed effect models, as well as generalized additive models, and performs a selection, to describe the possible associations between cytokine concentrations in control monkeys, and the short-term and long-term exposure to uninfected mosquito bites. It produces **Figures 6 and Figures S3-S8**.
 
 ### Data folder
 
