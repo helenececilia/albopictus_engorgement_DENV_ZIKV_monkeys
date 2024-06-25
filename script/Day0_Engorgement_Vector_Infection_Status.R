@@ -64,10 +64,18 @@ denv_sq$species <- "Squirrel"
 denv_sq$virus_true <- ifelse(denv_sq$mosq_type == "infecting","Dengue virus","")
 denv_sq$virus_label <- ifelse(denv_sq$mosq_type == "control","","Dengue virus")
 
+# analysis with batches 100% saliva positive among engorged
+denv_sq <- denv_sq[denv_sq$ID %in% c(5080,5929,6321,6541, # controls
+                                     6519,4516,4872,5910),]
+
 zikv_sq <- read.csv("../data/Day0_ZIKV_Squirrel_data_engorgement.csv")
 zikv_sq$species <- "Squirrel"
 zikv_sq$virus_true <- ifelse(zikv_sq$mosq_type == "infecting","Zika virus","")
 zikv_sq$virus_label <- ifelse(zikv_sq$mosq_type == "control","","Zika virus")
+
+# analysis with batches 100% saliva positive among engorged
+zikv_sq <- zikv_sq[zikv_sq$ID %in% c(5013,4806,6347,6359,
+                                     5730,4683,4728),]
 
 zikv_cy <- read.csv("../data/Day0_ZIKV_Cyno_data_engorgement.csv")
 zikv_cy$species <- "Cyno"
@@ -119,18 +127,18 @@ test$group_agg <- interaction(df_virus$species,df_virus$virus_true)
 test$group_agg <- gsub(" ","_",test$group_agg) # no space for posthoc test to work
 
 test <- test[,c("ID","nb_fed_day0","total","virus_true","species","group_agg","int_duration")]
-# Add the unique concurrent feeding batch on cynos
+# Add the unique concurrently feeding batch on cynos
 test <- rbind(test,list("FR423A",45,50,"","Cyno","Cyno.",NA)) # we don't know the duration for this feeding 
 # note : list() instead of c() avoids numbers being converted to characters
 test$group_agg <- as.factor(test$group_agg)
 
 test$prop <- test$nb_fed_day0/test$total
-# co-feeding mosquitoes and control are now considered the same group
+# concurrently feeding mosquitoes and control are now considered the same group
 test$virus_true[test$virus_true == ""] <- "Control"
 test$virus_true <- as.factor(test$virus_true)
 test <- test[!is.na(test$int_duration),]
 
-# Simple model with duration incorporated as offset (control and concurrent feeding together) ----
+# Simple model with duration incorporated as offset (control and concurrently feeding together) ----
 
 # These three formulations are strictly equivalent
 # m0 <- glmmTMB(nb_fed_day0/total ~ virus_true*species + offset(log(int_duration)),
@@ -258,9 +266,9 @@ p0 <- ggplot(newDat, aes(x = as.character(group_agg), y = pred)) +
                y.position = 1.64, label = "ns", size = 1.3, label.size = 11) +
   labs(y = "Predicted probability<br>of engorging",
        x = "",
-       fill = "Mosquito\nexposition status",
-       color = "Mosquito\nexposition status",
-       shape = "Mosquito\nexposition status") +
+       fill = "Mosquito\ninoculation status",
+       color = "Mosquito\ninoculation status",
+       shape = "Mosquito\ninoculation status") +
   ggtitle("A") +
   guides(fill = guide_legend(order = 1,
                              override.aes = list(alpha = 1, size = 5, linewidth = 1)),
