@@ -9,7 +9,7 @@ author: "Hélène Cecilia"
 
 This repository contains code used in the following paper.
 
-Cecilia H, Althouse BM, Azar SR, Moehn B, Yun R, Rossi SL, Vasilakis N, Hanley KA (2024) ***Aedes albopictus* is not an arbovirus aficionado - Impacts of sylvatic flavivirus infection in vectors and hosts on mosquito engorgement on non-human primates** *bioRxiv*
+Cecilia H, Althouse BM, Azar SR, Moehn B, Yun R, Rossi SL, Vasilakis N, Hanley KA (2024) ***Aedes albopictus* is not an arbovirus aficionado - Impacts of sylvatic orthoflavivirus infection on mosquito engorgement on non-human primates** *iScience*
 
 All code contained within this repository is released under the [CRAPL v0.1 License](http://matt.might.net/articles/crapl/). Data provided in this repository are sufficient to rerun all analyses.
 
@@ -59,7 +59,7 @@ Files starting with `Temperatures`provide host body temperature from a transpond
 
 Contains figures from the manuscript and the supplementary information, numbered accordingly.
 
-The `outlines` subfolder contains monkey and human images used in figures. The human image was created by Soremba and downloaded from [flaticon.com](https://www.flaticon.com/). The monkey images are licensed from Shutterstock.
+The `outlines` subfolder contains monkey, mosquito, and human images used in figures. The monkey and mosquito images are licensed from Shutterstock. The human image was created by Soremba and downloaded from [flaticon.com](https://www.flaticon.com/).
 
 #### Engorgement_models subfolder
 
@@ -67,7 +67,7 @@ Contains selected models to describe observed engorgement rates.
 
 #### Cytokines_analysis
 
-Contains reports from models applied to cytokines. These reports were used to produce **Table S12** (provided as Supplementary Information, not in the present repository).
+Contains reports from models applied to cytokines. These reports were used to produce **Table S13** (provided as Supplementary Information, not in the present repository).
 
 Any questions about this code base can be directed at [helene.cecilia3\@gmail.com](mailto:helene.cecilia3@gmail.com)
 
