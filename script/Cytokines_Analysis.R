@@ -104,7 +104,7 @@ p2 <- ggplot(bites_only) + geom_line(aes(x = day,
         plot.title = element_text(size = 27),
         axis.title.y = element_markdown())
 
-png(filename = "../output/figures/Figure_S3.png",
+png(filename = "../output/figures/Figure_S4.png",
     width = 1266, height = 800)
 plot(p1 / p2)
 dev.off()
@@ -1092,7 +1092,7 @@ p_draw <- ggdraw(p_suppl) +
   draw_image(image = "../output/figures/outlines/macaque_outline.png",
              x = 0.08, y = -0.25, scale = 0.12) 
 
-png(filename = "../output/figures/Figure_S6.png", width = 1600, height = 500)
+png(filename = "../output/figures/Figure_S7.png", width = 1600, height = 500)
 plot(p_draw)
 dev.off()
 
@@ -1182,9 +1182,9 @@ p5 <- ggplot() +
 p <- (p3 | p4 | p5) + plot_annotation(tag_levels = "A") & 
   theme(plot.tag = element_text(size = 25))
 
-png(filename = "../output/figures/Figure_S4.png",
+png(filename = "../output/figures/Figure_S5.png",
     width = 1900, height = 1000) # cyto1
-# png(filename = "../output/figures/Figure_S5.png",
+# png(filename = "../output/figures/Figure_S6.png",
 #     width = 1900, height = 1000) # cyto2
 plot(p)
 dev.off()
@@ -1193,9 +1193,9 @@ dev.off()
 p <- (p3 | p5) + plot_annotation(tag_levels = "A") & 
   theme(plot.tag = element_text(size = 25))
 
-png(filename = "../output/figures/Figure_S7.png",
+png(filename = "../output/figures/Figure_S8.png",
     width = 1266, height = 1000) # cyto3
-# png(filename = "../output/figures/Figure_S8.png",
+# png(filename = "../output/figures/Figure_S9.png",
 #     width = 1266, height = 1000) # cyto 4
 plot(p)
 dev.off()

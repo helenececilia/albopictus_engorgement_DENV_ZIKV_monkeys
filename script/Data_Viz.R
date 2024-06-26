@@ -454,7 +454,7 @@ p4 <- ggdraw() +
 
 pd <- (p1|p2)/(p4|p3)
 
-png(filename = "../output/figures/Figure_S1.png",
+png(filename = "../output/figures/Figure_S2.png",
     width = 1950, height = 1300)
 print(pd)
 dev.off()

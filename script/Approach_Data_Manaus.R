@@ -110,7 +110,7 @@ p_draw <- ggdraw() +
              x = 0.1, y = 0.8, scale = 0.15,
              valign = 0, halign = 0)
 
-png(filename = "../output/figures/Figure_S2_B.png",
+png(filename = "../output/figures/Figure_S3.png",
     height = 800, width = 1600)
 plot(p_draw)
 dev.off()
