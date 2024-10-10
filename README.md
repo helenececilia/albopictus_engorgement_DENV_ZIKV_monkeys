@@ -7,7 +7,7 @@ author: "Hélène Cecilia"
 
 ====================
 
-This repository contains code used in the following paper.
+This repository contains code used in the following paper. 
 
 Cecilia H, Althouse BM, Azar SR, Moehn B, Yun R, Rossi SL, Vasilakis N, Hanley KA (2024) ***Aedes albopictus* is not an arbovirus aficionado - Impacts of sylvatic orthoflavivirus infection on mosquito engorgement on non-human primates** *iScience*
 
